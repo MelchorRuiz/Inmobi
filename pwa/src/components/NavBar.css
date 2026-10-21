@@ -1,0 +1,91 @@
+.topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: auto;
+    background-color: white;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sutil sombra elegante */
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid #3E9B94;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    color: #3E9B94;
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #4a5568;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: #3E9B94; /* Efecto hover para los enlaces */
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* Estilo para el botón de Iniciar Sesión (Relleno) */
+.btn-login {
+    background-color: #3E9B94;
+    color: white;
+    border: 2px solid #3E9B94;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-login:hover {
+    background-color: #34827c;
+}
+
+/* Estilo para el botón de Registrarse (Bordeado) */
+.btn-register {
+    background-color: transparent;
+    color: #3E9B94;
+    border: 2px solid #3E9B94;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-register:hover {
+    background-color: #f0f7f6;
+}
+
+/* Estilo para el botón de Cerrar Sesión */
+.btn-logout {
+    background-color: #e53e3e;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-logout:hover {
+    background-color: #c53030;
+}
