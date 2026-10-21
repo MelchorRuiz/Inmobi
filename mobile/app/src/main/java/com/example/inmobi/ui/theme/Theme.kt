@@ -1,6 +1,5 @@
 package com.example.inmobi.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -9,35 +8,41 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
+// Esquema de Colores - Modo Oscuro
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = PrimaryTeal,
+    onPrimary = Color.White,
+    background = DarkBg,
+    surface = DarkSurface,
+    onBackground = DarkText,
+    onSurface = DarkText,
+    surfaceVariant = DarkTealContainer,
+    onSurfaceVariant = DarkMutedText,
+    outlineVariant = Color(0xFF334155),
+    surfaceContainerLow = Color(0xFF18181B)
 )
 
+// Esquema de Colores - Modo Claro
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = PrimaryTeal,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    background = LightBg,
+    surface = LightSurface,
+    onBackground = LightText,
+    onSurface = LightText,
+    surfaceVariant = LightTealContainer,
+    onSurfaceVariant = LightMutedText,
+    outlineVariant = Color(0xFFE2E8F0),
+    surfaceContainerLow = Color(0xFFF8FAFC)
 )
 
 @Composable
 fun InmobiTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -45,7 +50,6 @@ fun InmobiTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
