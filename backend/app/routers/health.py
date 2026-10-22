@@ -1,18 +1,12 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel
 from sqlalchemy import text
 
 from app.database import engine
+from app.schemas.health import HealthResponse
 
 router = APIRouter(prefix="/health", tags=["health"])
-
-
-class HealthResponse(BaseModel):
-    status: str
-    timestamp: datetime
-
 
 @router.get("")
 async def health() -> HealthResponse:
