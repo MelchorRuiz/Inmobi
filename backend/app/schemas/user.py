@@ -1,53 +1,61 @@
 from datetime import date, datetime
+from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field
 from app.models.user import Role
-from app.schemas.end_user import EndUserCreate, EndUserResponse
+from app.models.end_user import Preference
+from app.schemas.end_user import EndUserCreate, EndUserResponse, PhoneNumber
 
 MINIMUM_AGE = 18
 
 
+def _normalize_email(value: Any) -> str:
+    return str(value).strip().lower()
+
+
+def _validate_birth_date(value: date) -> date:
+    today = date.today()
+    if value > today:
+        raise ValueError("date of birth cannot be in the future")
+    age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+    if age < MINIMUM_AGE:
+        raise ValueError(f"you must be at least {MINIMUM_AGE} years old")
+    return value
+
+
+NormalizedEmail = Annotated[EmailStr, AfterValidator(_normalize_email)]
+ValidBirthDate = Annotated[date, AfterValidator(_validate_birth_date)]
+
+
 class UserBase(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
-    email: EmailStr
-    birth_date: date
+    email: NormalizedEmail
+    birth_date: ValidBirthDate
 
 
 class UserRegister(UserBase, EndUserCreate):
     password: str = Field(min_length=8, max_length=72)
 
-    @field_validator("email", mode="before")
-    @classmethod
-    def normalize_email(cls, value: str) -> str:
-        return str(value).strip().lower()
 
-    @field_validator("birth_date")
-    @classmethod
-    def birth_date_must_be_valid(cls, value: date) -> date:
-        today = date.today()
-        if value > today:
-            raise ValueError("date of birth cannot be in the future")
-        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
-        if age < MINIMUM_AGE:
-            raise ValueError(f"you must be at least {MINIMUM_AGE} years old")
-        return value
+class UserProfileUpdate(BaseModel):
+    full_name: str | None = Field(default=None, min_length=2, max_length=120)
+    birth_date: ValidBirthDate | None = None
+    phone: PhoneNumber | None = None
+    privacy_accepted: bool | None = None
+    preference: Preference | None = None
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: NormalizedEmail
     password: str
-
-    @field_validator("email", mode="before")
-    @classmethod
-    def normalize_email(cls, value: str) -> str:
-        return str(value).strip().lower()
 
 
 class UserResponse(BaseModel):
     id: int
-    full_name: str
+    full_name: str | None = None
     email: EmailStr
-    birth_date: date
+    birth_date: date | None = None
+    avatar_url: str | None = None
     role: Role
     is_active: bool
     created_at: datetime
@@ -56,6 +64,13 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class Token(BaseModel):
+class GoogleLogin(BaseModel):
+    id_token: str
+
+
+class SessionResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    role: Role
+    is_profile_complete: bool
+    has_profile_picture: bool

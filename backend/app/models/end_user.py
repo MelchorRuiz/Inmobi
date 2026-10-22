@@ -21,8 +21,8 @@ class EndUser(Base):
         index=True,
         autoincrement=False,
     )
-    phone = Column(String, nullable=False, unique=True)
-    privacy_accepted = Column(Boolean, nullable=False, default=False)
+    phone = Column(String, nullable=True, unique=True)
+    privacy_accepted = Column(Boolean, nullable=True)
     preference = Column(
         SAEnum(
             Preference,
@@ -30,7 +30,7 @@ class EndUser(Base):
             length=20,
             values_callable=lambda enum: [member.value for member in enum],
         ),
-        nullable=False,
+        nullable=True,
     )
 
     user = relationship("User", back_populates="end_user")
