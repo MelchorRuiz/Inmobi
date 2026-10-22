@@ -1,12 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.dependencies import require_roles
 from app.models.item import Item
+from app.models.user import Role
 from app.schemas.item import ItemCreate, ItemResponse
 
-router = APIRouter(prefix="/items", tags=["Items"])
+ANY_ROLE = require_roles(*Role)
 
-@router.post("/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
+router = APIRouter(
+    prefix="/items",
+    tags=["Items"],
+    dependencies=[Depends(ANY_ROLE)],
+)
+
+@router.post(
+    "/",
+    response_model=ItemResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_roles(Role.ADMINISTRATOR))],
+)
 def create_item(item_in: ItemCreate, db: Session = Depends(get_db)):
     db_item = Item(
         title=item_in.title,
@@ -29,6 +42,6 @@ def read_item(item_id: int, db: Session = Depends(get_db)):
     if not db_item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Item con id {item_id} no encontrado"
+            detail=f"Item with id {item_id} not found"
         )
     return db_item
