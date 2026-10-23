@@ -2,8 +2,9 @@ from datetime import date, datetime
 from typing import Annotated, Any
 
 from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field
-from app.models.user import Role
 from app.models.end_user import Preference
+from app.models.refresh_token import ClientType
+from app.models.user import Role
 from app.schemas.end_user import EndUserCreate, EndUserResponse, PhoneNumber
 
 MINIMUM_AGE = 18
@@ -48,6 +49,7 @@ class UserProfileUpdate(BaseModel):
 class UserLogin(BaseModel):
     email: NormalizedEmail
     password: str
+    client_type: ClientType
 
 
 class UserResponse(BaseModel):
@@ -66,11 +68,23 @@ class UserResponse(BaseModel):
 
 class GoogleLogin(BaseModel):
     id_token: str
+    client_type: ClientType
+
+
+class RefreshRequest(BaseModel):
+    client_type: ClientType
+    refresh_token: str | None = None
+
+
+class LogoutRequest(BaseModel):
+    client_type: ClientType
+    refresh_token: str | None = None
 
 
 class SessionResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    refresh_token: str | None = None
     role: Role
     is_profile_complete: bool
     has_profile_picture: bool

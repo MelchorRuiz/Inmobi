@@ -1,5 +1,5 @@
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -7,20 +7,37 @@ from app.database import get_db
 from app.dependencies import get_current_user
 from app.google_auth import GoogleIdentity, verify_google_id_token
 from app.models.end_user import EndUser
+from app.models.refresh_token import ClientType
 from app.models.user import Role, User
 from app.schemas.user import (
     GoogleLogin,
+    LogoutRequest,
+    RefreshRequest,
     SessionResponse,
     UserLogin,
     UserResponse,
 )
 from app.security import create_access_token, verify_password
+from app.sessions import (
+    IssuedRefreshToken,
+    RefreshTokenError,
+    RefreshTokenReuseError,
+    clear_refresh_cookie,
+    issue_refresh_token,
+    revoke_refresh_token,
+    rotate_refresh_token,
+    set_refresh_cookie,
+)
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 @router.post("/login/", response_model=SessionResponse)
-def login(user_in: UserLogin, db: Session = Depends(get_db)):
+def login(
+    user_in: UserLogin,
+    response: Response,
+    db: Session = Depends(get_db),
+):
     user = db.query(User).filter(User.email == user_in.email).first()
     if user is None or not _verify_credentials(user_in.password, user):
         raise HTTPException(
@@ -35,11 +52,15 @@ def login(user_in: UserLogin, db: Session = Depends(get_db)):
             detail="this account is deactivated",
         )
 
-    return _build_session(user)
+    return _build_session(user, db, user_in.client_type, response)
 
 
 @router.post("/google/", response_model=SessionResponse)
-def login_with_google(payload: GoogleLogin, db: Session = Depends(get_db)):
+def login_with_google(
+    payload: GoogleLogin,
+    response: Response,
+    db: Session = Depends(get_db),
+):
     if not settings.GOOGLE_CLIENT_ID:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -70,12 +91,75 @@ def login_with_google(payload: GoogleLogin, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
 
-    return _build_session(user)
+    return _build_session(user, db, payload.client_type, response)
+
+
+@router.post("/refresh/", response_model=SessionResponse)
+def refresh(
+    payload: RefreshRequest,
+    response: Response,
+    refresh_token_cookie: str | None = Cookie(default=None, alias="refresh_token"),
+    db: Session = Depends(get_db),
+):
+    raw = _resolve_refresh_token(payload.client_type, payload.refresh_token, refresh_token_cookie)
+    if not raw:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="refresh token required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    try:
+        user, issued = rotate_refresh_token(db, raw)
+    except RefreshTokenReuseError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="refresh token already used, all sessions in this chain were revoked",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+    except RefreshTokenError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        ) from exc
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="this account is deactivated",
+        )
+
+    return _format_session_response(user, issued, payload.client_type, response)
+
+
+@router.post("/logout/", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    payload: LogoutRequest,
+    response: Response,
+    refresh_token_cookie: str | None = Cookie(default=None, alias="refresh_token"),
+    db: Session = Depends(get_db),
+):
+    raw = _resolve_refresh_token(payload.client_type, payload.refresh_token, refresh_token_cookie)
+    if raw:
+        revoke_refresh_token(db, raw)
+    clear_refresh_cookie(response)
+    return response
 
 
 @router.get("/me/", response_model=UserResponse)
 def read_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+def _resolve_refresh_token(
+    client_type: ClientType,
+    body_token: str | None,
+    cookie_token: str | None,
+) -> str | None:
+    if client_type == ClientType.WEB:
+        return cookie_token
+    return body_token
 
 
 def _verify_credentials(password: str, user: User | None) -> bool:
@@ -84,14 +168,36 @@ def _verify_credentials(password: str, user: User | None) -> bool:
     return verify_password(password, user.password_hash)
 
 
-def _build_session(user: User) -> SessionResponse:
+def _build_session(
+    user: User,
+    db: Session,
+    client_type: ClientType,
+    response: Response,
+) -> SessionResponse:
     access_token = create_access_token(subject=str(user.id), role=user.role.value)
-    return SessionResponse(
-        access_token=access_token,
+    issued = issue_refresh_token(db, user, client_type)
+    return _format_session_response(user, issued, client_type, response, access_token)
+
+
+def _format_session_response(
+    user: User,
+    issued: IssuedRefreshToken,
+    client_type: ClientType,
+    response: Response,
+    access_token: str | None = None,
+) -> SessionResponse:
+    token = access_token or create_access_token(subject=str(user.id), role=user.role.value)
+    payload = SessionResponse(
+        access_token=token,
         role=user.role,
         is_profile_complete=user.is_profile_complete,
         has_profile_picture=user.has_profile_picture,
     )
+    if client_type == ClientType.WEB:
+        set_refresh_cookie(response, issued)
+    else:
+        payload.refresh_token = issued.token
+    return payload
 
 
 def _create_google_user(db: Session, identity: GoogleIdentity) -> User:
