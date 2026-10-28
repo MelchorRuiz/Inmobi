@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
-    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_ID_WEB: str = ""
+    GOOGLE_CLIENT_ID_MOBILE: str = ""
     RESEND_API_KEY: str = ""
     EMAIL_FROM_ADDRESS: str = "onboarding@resend.dev"
     API_BASE_URL: str = "http://localhost:8000"

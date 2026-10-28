@@ -78,14 +78,25 @@ def login_with_google(
     response: Response,
     db: Session = Depends(get_db),
 ):
-    if not settings.GOOGLE_CLIENT_ID:
+    if not settings.GOOGLE_CLIENT_ID_WEB and not settings.GOOGLE_CLIENT_ID_MOBILE:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="google sign-in is not configured",
         )
 
+    audience = (
+        settings.GOOGLE_CLIENT_ID_WEB if payload.client_type == ClientType.WEB
+        else settings.GOOGLE_CLIENT_ID_MOBILE
+    )
+
+    if not audience:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"google sign-in is not configured for {payload.client_type.value} clients",
+        )
+
     try:
-        identity = verify_google_id_token(payload.id_token, audience=settings.GOOGLE_CLIENT_ID)
+        identity = verify_google_id_token(payload.id_token, audience=audience)
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
