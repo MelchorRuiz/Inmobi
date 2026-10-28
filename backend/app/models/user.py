@@ -21,6 +21,8 @@ class User(Base):
     birth_date = Column(Date, nullable=True)
     avatar_url = Column(String, nullable=True)
     google_id = Column(String, nullable=True, index=True, unique=True)
+    email_verified = Column(Boolean, nullable=False, default=False)
+    email_verification_sent_at = Column(DateTime(timezone=True), nullable=True)
     role = Column(
         SAEnum(
             Role,

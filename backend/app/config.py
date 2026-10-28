@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
     GOOGLE_CLIENT_ID: str = ""
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM_ADDRESS: str = "onboarding@resend.dev"
+    API_BASE_URL: str = "http://localhost:8000"
+    EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24
 
     model_config = SettingsConfigDict(
         env_file=".env",

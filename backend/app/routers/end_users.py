@@ -1,12 +1,16 @@
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import require_roles
+from app.email import send_verification_email
 from app.models.end_user import EndUser
 from app.models.user import Role, User
 from app.schemas.user import UserRegister, UserResponse, UserProfileUpdate
-from app.security import hash_password
+from app.security import create_verification_token, hash_password
 
 router = APIRouter(prefix="/end-users", tags=["End Users"])
 
@@ -36,6 +40,7 @@ def register_end_user(user_in: UserRegister, db: Session = Depends(get_db)):
         email=user_in.email,
         password_hash=hash_password(user_in.password),
         birth_date=user_in.birth_date,
+        email_verified=False,
         role=Role.USER,
         is_active=True,
     )
@@ -50,6 +55,13 @@ def register_end_user(user_in: UserRegister, db: Session = Depends(get_db)):
             preference=user_in.preference,
         )
     )
+    db.flush()
+
+    token = create_verification_token(db_user.id, db_user.email)
+    verification_url = f"{settings.API_BASE_URL}/auth/verify-email/?token={token}"
+    send_verification_email(db_user.email, verification_url)
+    db_user.email_verification_sent_at = datetime.now(timezone.utc)
+
     db.commit()
     db.refresh(db_user)
     return db_user

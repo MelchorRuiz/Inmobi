@@ -58,6 +58,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     birth_date: date | None = None
     avatar_url: str | None = None
+    email_verified: bool
     role: Role
     is_active: bool
     created_at: datetime
@@ -79,6 +80,14 @@ class RefreshRequest(BaseModel):
 class LogoutRequest(BaseModel):
     client_type: ClientType
     refresh_token: str | None = None
+
+
+class ResendVerificationRequest(BaseModel):
+    email: NormalizedEmail
+
+
+class VerificationResponse(BaseModel):
+    email_verified: bool
 
 
 class SessionResponse(BaseModel):

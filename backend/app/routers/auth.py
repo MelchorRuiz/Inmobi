@@ -1,4 +1,6 @@
 import jwt
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
@@ -13,11 +15,18 @@ from app.schemas.user import (
     GoogleLogin,
     LogoutRequest,
     RefreshRequest,
+    ResendVerificationRequest,
     SessionResponse,
     UserLogin,
     UserResponse,
+    VerificationResponse,
 )
-from app.security import create_access_token, verify_password
+from app.security import (
+    create_access_token,
+    create_verification_token,
+    decode_verification_token,
+    verify_password,
+)
 from app.sessions import (
     IssuedRefreshToken,
     RefreshTokenError,
@@ -30,6 +39,8 @@ from app.sessions import (
 )
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
+
+RESEND_COOLDOWN_SECONDS = 60
 
 
 @router.post("/login/", response_model=SessionResponse)
@@ -44,6 +55,12 @@ def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="please verify your email first",
         )
 
     if not user.is_active:
@@ -78,11 +95,17 @@ def login_with_google(
 
     user = db.query(User).filter(User.email == identity.email).first()
 
-    if user is not None and not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="this account is deactivated",
-        )
+    if user is not None:
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="this account is deactivated",
+            )
+        if not user.email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="please verify your email first",
+            )
 
     if user is None:
         user = _create_google_user(db, identity)
@@ -92,6 +115,59 @@ def login_with_google(
         db.refresh(user)
 
     return _build_session(user, db, payload.client_type, response)
+
+
+@router.get("/verify-email/", response_model=VerificationResponse)
+def verify_email(token: str, db: Session = Depends(get_db)):
+    try:
+        claims = decode_verification_token(token)
+        user_id = int(claims["sub"])
+    except (jwt.PyJWTError, KeyError, TypeError, ValueError) as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid or expired verification token",
+        ) from exc
+
+    user = db.query(User).filter(User.id == user_id).first()
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="user not found",
+        )
+
+    if not user.email_verified:
+        user.email_verified = True
+        db.commit()
+
+    return VerificationResponse(email_verified=user.email_verified)
+
+
+@router.post("/resend-verification/")
+def resend_verification(payload: ResendVerificationRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == payload.email).first()
+    if user is None or user.email_verified:
+        return {"message": "if the email is registered, a verification link has been sent"}
+
+    now = datetime.now(timezone.utc)
+    cooldown_cutoff = now - timedelta(seconds=RESEND_COOLDOWN_SECONDS)
+    if (
+        user.email_verification_sent_at is not None
+        and user.email_verification_sent_at > cooldown_cutoff
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="please wait before requesting another verification email",
+        )
+
+    token = create_verification_token(user.id, user.email)
+    verification_url = f"{settings.API_BASE_URL}/auth/verify-email/?token={token}"
+
+    send_verification_email(user.email, verification_url)
+
+    user.email_verification_sent_at = now
+    db.commit()
+
+    return {"message": "if the email is registered, a verification link has been sent"}
 
 
 @router.post("/refresh/", response_model=SessionResponse)
@@ -128,6 +204,12 @@ def refresh(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="this account is deactivated",
+        )
+
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="please verify your email first",
         )
 
     return _format_session_response(user, issued, payload.client_type, response)
@@ -207,6 +289,7 @@ def _create_google_user(db: Session, identity: GoogleIdentity) -> User:
         password_hash=None,
         avatar_url=identity.picture_url,
         google_id=identity.google_id,
+        email_verified=True,
         role=Role.USER,
         is_active=True,
     )
@@ -229,3 +312,5 @@ def _link_google_identity(user: User, identity: GoogleIdentity) -> None:
         user.google_id = identity.google_id
     if user.avatar_url is None and identity.picture_url is not None:
         user.avatar_url = identity.picture_url
+    if not user.email_verified:
+        user.email_verified = True
