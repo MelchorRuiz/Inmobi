@@ -2,6 +2,7 @@ package com.example.inmobi.ui.theme
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,6 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.Handshake
-import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.Button
@@ -60,6 +60,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -67,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.inmobi.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -158,11 +160,11 @@ fun MobileHeader(
                     .background(colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.HomeWork,
+                // Corrección: Apuntando a R.drawable para evitar excepciones de tipo Adaptive Icon en Compose
+                Image(
+                    painter = painterResource(id = R.drawable.ic_inmobi_launcher_background),
                     contentDescription = "Logo Inmobi",
-                    tint = PrimaryTeal,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
@@ -357,7 +359,6 @@ fun IaValuationBannerWithStory(
                     }
                 }
 
-                // Historia con tono humano
                 AnimatedVisibility(visible = showStory) {
                     Column(
                         modifier = Modifier

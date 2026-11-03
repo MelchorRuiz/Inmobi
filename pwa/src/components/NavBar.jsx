@@ -1,36 +1,45 @@
 import './NavBar.css';
+import Logo from '../assets/LogoTipo.png';
 
 const linksPublicos = [
-    { etiqueta: "Inicio", ruta: "./Inicio" },
-    { etiqueta: "Principios", ruta: "./Principios" },
-    { etiqueta: "Comparativa", ruta: "./Comparativa" },
-    { etiqueta: "Descargar", ruta: "./Descargar" },
+    { etiqueta: "Inicio", ruta: "inicio" },
+    { etiqueta: "Principios", ruta: "#principios" },
+    { etiqueta: "Comparativa", ruta: "#comparativa" },
+    { etiqueta: "Descargar", ruta: "#descargar" },
 ];
 
 const linksPrivados = [
-    { etiqueta: "Vender", ruta: "/vender" },
-    { etiqueta: "Arrendar", ruta: "/arrendar" },
-    { etiqueta: "Comprar", ruta: "/comprar" },
-    { etiqueta: "Rentar", ruta: "/rentar" },
-    { etiqueta: "Mensajes", ruta: "/mensajes" },
+    { etiqueta: "Vender", ruta: "vender" },
+    { etiqueta: "Arrendar", ruta: "arrendar" },
+    { etiqueta: "Comprar", ruta: "comprar" },
+    { etiqueta: "Rentar", ruta: "rentar" },
+    { etiqueta: "Mensajes", ruta: "mensajes" },
 ];
 
-const NavBar = ({ isLoggedIn, onLogout, onLogin, onRegister }) => {
+const NavBar = ({ isLoggedIn, onLogout, onNavigate }) => {
    const enlacesActuales = isLoggedIn ? linksPrivados : linksPublicos;
 
   return (
     <nav className="topBar">
-      <div className="logo">Inmobi</div>
+      {/* El logotipo te regresa a la vista de inicio */}
+      <div 
+        className="navbar-logo-container" 
+        onClick={() => onNavigate('inicio')}
+        style={{ cursor: 'pointer' }}
+      >
+        <img src={Logo} alt="Inmobi Logo" className="navbar-logo-img" />
+        <span className="navbar-logo-text">Inmobi</span>
+      </div>
 
       <div className="nav-links">
         {enlacesActuales.map((item, index) => (
-          <a key={index} href={item.ruta}>
+          <a key={index} href={`#${item.ruta}`}>
             {item.etiqueta}
           </a>
         ))}
       </div>
 
-      {/* Botones de autenticación dinámicos */}
+      {/* Botones de autenticación conectados a las vistas de Login y Register */}
       <div className="auth-buttons">
         {isLoggedIn ? (
           <button className="btn-logout" onClick={onLogout}>
@@ -38,10 +47,10 @@ const NavBar = ({ isLoggedIn, onLogout, onLogin, onRegister }) => {
           </button>
         ) : (
           <>
-            <button className="btn-register" onClick={onRegister}>
+            <button className="btn-register" onClick={() => onNavigate('register')}>
               Registrarse
             </button>
-            <button className="btn-login" onClick={onLogin}>
+            <button className="btn-login" onClick={() => onNavigate('login')}>
               Iniciar Sesión
             </button>
           </>

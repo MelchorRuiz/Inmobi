@@ -1,22 +1,41 @@
 .topBar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: auto;
-    background-color: white;
-    padding: 10px 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Sutil sombra elegante */
+    background-color: #ffffff;
+    padding: 14px 40px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
-.logo {
+/* Contenedor del logo con alineación vertical perfecta */
+.navbar-logo-container {
     display: flex;
     align-items: center;
-    gap: 10px;
-    border: 2px solid #3E9B94;
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-weight: bold;
-    color: #3E9B94;
+    gap: 10px; /* Espacio exacto entre el icono y la palabra */
+    cursor: pointer;
+    height: 100%; /* Mantiene el tamaño dentro del límite de la barra */
+}
+
+/* La imagen del icono del logo */
+.navbar-logo-img {
+    height: 36px; /* Altura ideal fija para que no deforme la NavBar */
+    width: auto;
+    object-fit: contain;
+    /* Si la imagen trae márgenes transparentes internos grandes, 
+       podemos escalar ligeramente la imagen sin agrandar el div */
+    transform: scale(1.15); 
+}
+
+/* El texto "Inmobi" junto al icono */
+.navbar-logo-text {
+    font-size: 20px;
+    font-weight: 800;
+    color: #3E9B94; /* O #1a202c si prefieres texto oscuro */
+    letter-spacing: -0.5px;
+    line-height: 1;
 }
 
 .nav-links {
