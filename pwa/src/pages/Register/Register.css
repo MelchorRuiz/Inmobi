@@ -1,0 +1,282 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f8f7; /* Tinte menta ultra suave */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1e293b;
+}
+
+.auth-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 48px;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.logo-img {
+  height: 34px;
+  width: auto;
+  transform: scale(1.1);
+}
+
+.logo-title {
+  font-size: 21px;
+  font-weight: 800;
+  color: #3E9B94;
+  letter-spacing: -0.5px;
+}
+
+/* Botón Volver Aesthetic */
+.btn-volver-aesthetic {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  color: #475569;
+  border: 1.5px solid #e2e8f0;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+}
+
+.btn-volver-aesthetic .icon-back {
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.btn-volver-aesthetic:hover {
+  background-color: #f0f7f6;
+  border-color: #3E9B94;
+  color: #3E9B94;
+  box-shadow: 0 4px 12px rgba(62, 155, 148, 0.15);
+  transform: translateY(-1px);
+}
+
+.btn-volver-aesthetic:hover .icon-back {
+  transform: translateX(-3px);
+}
+
+/* Layout Centrado Limpio (1 Solas Tarjeta Proporcional) */
+.auth-single-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.auth-card-clean {
+  background: #ffffff;
+  width: 100%;
+  max-width: 600px; /* Ancho perfecto para abarcar el contenido sin verse vacía */
+  padding: 40px 48px;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px -15px rgba(62, 155, 148, 0.12), 0 10px 20px -10px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
+}
+
+.auth-card-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.badge-tag-mini {
+  display: inline-block;
+  background: rgba(62, 155, 148, 0.12);
+  color: #3E9B94;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.auth-card-header h2 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
+}
+
+.auth-card-header p {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.google-oauth-box {
+  margin-bottom: 4px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.auth-divider span {
+  padding: 0 12px;
+}
+
+.modern-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Filas en dos columnas */
+.form-grid-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.input-field input,
+.select-custom {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background-color: #f8fafc;
+  font-size: 14px;
+  color: #0f172a;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.select-custom {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%20%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  appearance: none;
+  padding-right: 36px;
+}
+
+.input-field input:focus,
+.select-custom:focus {
+  border-color: #3E9B94;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(62, 155, 148, 0.12);
+}
+
+.checkbox-row {
+  margin-top: 4px;
+}
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #475569;
+  cursor: pointer;
+}
+
+.custom-checkbox input {
+  accent-color: #3E9B94;
+  width: 16px;
+  height: 16px;
+}
+
+.btn-inmobi-primary {
+  margin-top: 8px;
+  background-color: #3E9B94;
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-inmobi-primary:hover {
+  background-color: #34827c;
+  transform: translateY(-1px);
+}
+
+.card-footer-action {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.link-highlight {
+  background: none;
+  border: none;
+  color: #3E9B94;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+}
+
+.link-highlight:hover {
+  text-decoration: underline;
+}
+
+.auth-footer-bar {
+  text-align: center;
+  padding: 18px;
+  font-size: 12px;
+  color: #94a3b8;
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+/* Adaptación a móviles */
+@media (max-width: 640px) {
+  .form-grid-row {
+    grid-template-columns: 1fr;
+  }
+  .auth-card-clean {
+    padding: 24px;
+  }
+  .auth-header-bar {
+    padding: 16px 20px;
+  }
+}
