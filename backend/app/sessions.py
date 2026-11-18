@@ -61,9 +61,12 @@ def issue_refresh_token(db: Session, user: User, client_type: ClientType) -> Iss
 
 
 def rotate_refresh_token(db: Session, raw: str) -> tuple[User, IssuedRefreshToken]:
+    now = datetime.now(timezone.utc)
+    token_hash = _hash_token(raw)
+    
     record = (
         db.query(RefreshToken)
-        .filter(RefreshToken.token_hash == _hash_token(raw))
+        .filter(RefreshToken.token_hash == token_hash)
         .first()
     )
 
@@ -74,12 +77,21 @@ def rotate_refresh_token(db: Session, raw: str) -> tuple[User, IssuedRefreshToke
         _revoke_family(db, record.family_id)
         raise RefreshTokenReuseError("refresh token already used, family revoked")
 
-    if record.expires_at <= datetime.now(timezone.utc):
-        record.revoked_at = datetime.now(timezone.utc)
+    expired = (
+        db.query(RefreshToken.id)
+        .filter(
+            RefreshToken.token_hash == token_hash,
+            RefreshToken.expires_at <= now
+        )
+        .first()
+    )
+
+    if expired is not None:
+        record.revoked_at = now
         db.commit()
         raise RefreshTokenError("refresh token expired")
 
-    record.revoked_at = datetime.now(timezone.utc)
+    record.revoked_at = now
 
     new_raw = _new_token()
     successor = RefreshToken(
@@ -87,7 +99,7 @@ def rotate_refresh_token(db: Session, raw: str) -> tuple[User, IssuedRefreshToke
         token_hash=_hash_token(new_raw),
         family_id=record.family_id,
         client_type=record.client_type,
-        expires_at=datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
+        expires_at=now + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
     )
     db.add(successor)
     db.commit()

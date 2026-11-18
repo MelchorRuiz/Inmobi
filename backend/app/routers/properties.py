@@ -1,0 +1,164 @@
+from decimal import Decimal
+from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from app.dependencies import get_current_user, require_roles
+from app.database import get_db
+from app.models.operation_type import OperationType
+from app.models.property import ListingStatus, Property, PropertyType
+from app.models.user import Role, User
+from app.schemas.property import PropertyCreate, PropertyResponse, PropertyUpdate
+
+
+router = APIRouter(prefix="/properties", tags=["Properties"])
+
+
+@router.post(
+    "/",
+    response_model=PropertyResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_property(
+    property_in: PropertyCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(Role.USER)),
+):
+    operation = (
+        db.query(OperationType)
+        .filter(OperationType.operation_name == property_in.operation_type)
+        .first()
+    )
+    if not operation:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Operation type '{property_in.operation_type}' not found",
+        )
+    property_data = property_in.model_dump(exclude={"operation_type"})
+    property_data["owner_user_id"] = current_user.id
+    property_data["operation_type_id"] = operation.operation_type_id
+    db_property = Property(**property_data)
+    db.add(db_property)
+    db.commit()
+    db.refresh(db_property)
+    return _to_response(db_property)
+
+
+@router.get("/", response_model=list[PropertyResponse])
+def list_properties(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    operation_type: Optional[str] = None,
+    property_type: Optional[PropertyType] = None,
+    listing_status: Optional[ListingStatus] = None,
+    city: Optional[str] = None,
+    min_price: Optional[Decimal] = None,
+    max_price: Optional[Decimal] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Property).join(OperationType)
+
+    if operation_type is not None:
+        query = query.filter(OperationType.operation_name == operation_type)
+    if property_type is not None:
+        query = query.filter(Property.property_type == property_type)
+    if listing_status is not None:
+        query = query.filter(Property.listing_status == listing_status)
+    if city is not None:
+        query = query.filter(Property.city.ilike(f"%{city}%"))
+    if min_price is not None:
+        query = query.filter(Property.price >= min_price)
+    if max_price is not None:
+        query = query.filter(Property.price <= max_price)
+
+    properties = query.offset(skip).limit(limit).all()
+    return [_to_response(p) for p in properties]
+
+
+@router.get("/my-properties", response_model=list[PropertyResponse])
+def my_properties(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    operation_type: Optional[str] = None,
+    property_type: Optional[PropertyType] = None,
+    listing_status: Optional[ListingStatus] = None,
+    city: Optional[str] = None,
+    min_price: Optional[Decimal] = None,
+    max_price: Optional[Decimal] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    query = db.query(Property).join(OperationType).filter(Property.owner_user_id == current_user.id)
+
+    if operation_type is not None:
+        query = query.filter(OperationType.operation_name == operation_type)
+    if property_type is not None:
+        query = query.filter(Property.property_type == property_type)
+    if listing_status is not None:
+        query = query.filter(Property.listing_status == listing_status)
+    if city is not None:
+        query = query.filter(Property.city.ilike(f"%{city}%"))
+    if min_price is not None:
+        query = query.filter(Property.price >= min_price)
+    if max_price is not None:
+        query = query.filter(Property.price <= max_price)
+
+    properties = query.offset(skip).limit(limit).all()
+    return [_to_response(p) for p in properties]
+
+
+@router.get("/{property_id}", response_model=PropertyResponse)
+def get_property(property_id: int, db: Session = Depends(get_db)):
+    db_property = db.query(Property).filter(Property.property_id == property_id).first()
+    if not db_property:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    return _to_response(db_property)
+
+
+@router.put("/{property_id}", response_model=PropertyResponse)
+def update_property(
+    property_id: int,
+    property_in: PropertyUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    db_property = db.query(Property).filter(Property.property_id == property_id).first()
+    if not db_property:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    if db_property.owner_user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own properties"
+        )
+    update_data = property_in.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_property, field, value)
+    db.commit()
+    db.refresh(db_property)
+    return _to_response(db_property)
+
+
+@router.delete("/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_property(
+    property_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(Role.ADMINISTRATOR, Role.USER)),
+):
+    db_property = db.query(Property).filter(Property.property_id == property_id).first()
+    if not db_property:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+    is_owner = db_property.owner_user_id == current_user.id
+    is_admin = current_user.role == Role.ADMINISTRATOR
+    if not (is_owner or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete this property"
+        )
+    db.delete(db_property)
+    db.commit()
+
+
+def _to_response(prop: Property) -> PropertyResponse:
+    return PropertyResponse(
+        **{c.name: getattr(prop, c.name) for c in prop.__table__.columns},
+        operation_name=prop.operation_type.operation_name,
+    )

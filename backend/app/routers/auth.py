@@ -8,6 +8,7 @@ from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.google_auth import GoogleIdentity, verify_google_id_token
+from app.email import send_verification_email
 from app.models.end_user import EndUser
 from app.models.refresh_token import ClientType
 from app.models.user import Role, User
@@ -78,25 +79,16 @@ def login_with_google(
     response: Response,
     db: Session = Depends(get_db),
 ):
-    if not settings.GOOGLE_CLIENT_ID_WEB and not settings.GOOGLE_CLIENT_ID_MOBILE:
+    if not settings.GOOGLE_CLIENT_ID_WEB:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="google sign-in is not configured",
         )
 
-    audience = (
-        settings.GOOGLE_CLIENT_ID_WEB if payload.client_type == ClientType.WEB
-        else settings.GOOGLE_CLIENT_ID_MOBILE
-    )
-
-    if not audience:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"google sign-in is not configured for {payload.client_type.value} clients",
-        )
-
     try:
-        identity = verify_google_id_token(payload.id_token, audience=audience)
+        identity = verify_google_id_token(
+            payload.id_token, audience=settings.GOOGLE_CLIENT_ID_WEB
+        )
     except jwt.PyJWTError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -159,12 +151,13 @@ def resend_verification(payload: ResendVerificationRequest, db: Session = Depend
     if user is None or user.email_verified:
         return {"message": "if the email is registered, a verification link has been sent"}
 
-    now = datetime.now(timezone.utc)
-    cooldown_cutoff = now - timedelta(seconds=RESEND_COOLDOWN_SECONDS)
-    if (
-        user.email_verification_sent_at is not None
-        and user.email_verification_sent_at > cooldown_cutoff
-    ):
+    cooldown_cutoff = datetime.now(timezone.utc) - timedelta(seconds=RESEND_COOLDOWN_SECONDS)
+    recently_sent = (
+        db.query(User.id)
+        .filter(User.id == user.id, User.email_verification_sent_at > cooldown_cutoff)
+        .first()
+    )
+    if recently_sent is not None:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="please wait before requesting another verification email",
@@ -175,7 +168,7 @@ def resend_verification(payload: ResendVerificationRequest, db: Session = Depend
 
     send_verification_email(user.email, verification_url)
 
-    user.email_verification_sent_at = now
+    user.email_verification_sent_at = datetime.now(timezone.utc)
     db.commit()
 
     return {"message": "if the email is registered, a verification link has been sent"}
@@ -237,7 +230,6 @@ def logout(
     if raw:
         revoke_refresh_token(db, raw)
     clear_refresh_cookie(response)
-    return response
 
 
 @router.get("/me/", response_model=UserResponse)
