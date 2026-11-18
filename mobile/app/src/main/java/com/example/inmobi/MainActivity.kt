@@ -4,164 +4,230 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.inmobi.ui.theme.BuyDetailScreen
-import com.example.inmobi.ui.theme.BuyScreen
-import com.example.inmobi.ui.theme.ChatDetailScreen
-import com.example.inmobi.ui.theme.InmobiTheme
-import com.example.inmobi.ui.theme.LeaseScreen
-import com.example.inmobi.ui.theme.LoginScreen
-import com.example.inmobi.ui.theme.MessagesScreen
-import com.example.inmobi.ui.theme.MobileHomeScreen
-import com.example.inmobi.ui.theme.PropertyFormScreen
-import com.example.inmobi.ui.theme.RegisterScreen
-import com.example.inmobi.ui.theme.RentScreen
-import com.example.inmobi.ui.theme.SalesScreen
+import com.example.inmobi.core.network.TokenManager
+import com.example.inmobi.core.ui.components.AuthenticatedHeader
+import com.example.inmobi.core.ui.components.FloatingIslandFooter
+import com.example.inmobi.core.ui.theme.InmobiTheme
+import com.example.inmobi.features.auth.ui.LoginScreen
+import com.example.inmobi.features.auth.ui.ProfileCompletionScreen
+import com.example.inmobi.features.auth.ui.RegisterScreen
+import com.example.inmobi.features.auth.ui.VerificationSentScreen
+import com.example.inmobi.features.home.ui.HomeScreen
+import com.example.inmobi.features.main.ui.MainDashboardScreen
+import com.example.inmobi.features.messages.ui.MessagesScreen
+import com.example.inmobi.features.properties.ui.buy.BuyPropertyScreen
+import com.example.inmobi.features.properties.ui.detail.PropertyDetailScreen
+import com.example.inmobi.features.properties.ui.form.PropertyFormScreen
+import com.example.inmobi.features.properties.ui.lease.LeasePropertiesScreen
+import com.example.inmobi.features.properties.ui.manage.ManagePropertyScreen
+import com.example.inmobi.features.properties.ui.rent.RentPropertyScreen
+import com.example.inmobi.features.properties.ui.sell.SellPropertiesScreen
+import com.example.inmobi.features.settings.ui.SettingsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        TokenManager.init(this)
+
         setContent {
-            val systemInDark = isSystemInDarkTheme()
-            var isDarkTheme by remember { mutableStateOf(systemInDark) }
+            InmobiTheme {
+                AppNavigation()
+            }
+        }
+    }
+}
 
-            var currentScreen by remember { mutableStateOf("home") }
+@Composable
+fun AppNavigation() {
+    var currentScreen by remember { mutableStateOf("home") }
+    var registeredEmail by remember { mutableStateOf("") }
+    var selectedPropertyId by remember { mutableStateOf<Int?>(null) }
+    var managePropertyId by remember { mutableStateOf<Int?>(null) }
+    var manageOperationType by remember { mutableStateOf("sale") }
+    var editPropertyId by remember { mutableStateOf<Int?>(null) }
+    var formOperationType by remember { mutableStateOf("sale") }
+    var fromManage by remember { mutableStateOf(false) }
+    var previousScreen by remember { mutableStateOf("main") }
+    var listRefreshKey by remember { mutableStateOf(0) }
 
-            // Estado para CRUD de propiedades
-            var isEditMode by remember { mutableStateOf(false) }
-            var editingTitle by remember { mutableStateOf("") }
-            var editingPrice by remember { mutableStateOf("") }
+    LaunchedEffect(Unit) {
+        if (TokenManager.hasToken()) {
+            currentScreen = "main"
+        }
+    }
 
-            // Estado para Detalles de Compra
-            var selectedBuyTitle by remember { mutableStateOf("Residencia Moderna en Cañada del Refugio") }
-            var selectedBuyPrice by remember { mutableStateOf("$4,250,000") }
-            var selectedBuyAddress by remember { mutableStateOf("Cañada del Refugio, León, Gto.") }
+    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario")
+    val isAuthenticated = currentScreen in authenticatedScreens
 
-            var initialChatMessage by remember { mutableStateOf("") }
-            InmobiTheme(darkTheme = isDarkTheme) {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    Box(modifier = Modifier.padding(innerPadding)) {
-                        when (currentScreen) {
-                            "home" -> MobileHomeScreen(
-                                isDarkTheme = isDarkTheme,
-                                onToggleTheme = { isDarkTheme = !isDarkTheme },
-                                onGoToLogin = { currentScreen = "login" },
-                                onGoToRegister = { currentScreen = "register" }
-                            )
-                            "login" -> LoginScreen(
-                                onBackToHome = { currentScreen = "home" },
-                                onGoToRegister = { currentScreen = "register" },
-                                onLoginSuccess = { currentScreen = "sales" }
-                            )
-                            "register" -> RegisterScreen(
-                                onBackToHome = { currentScreen = "home" },
-                                onGoToLogin = { currentScreen = "login" },
-                                onRegisterSuccess = { currentScreen = "login" }
-                            )
-                            "sales", "vender" -> SalesScreen(
-                                onGoToLogin = { currentScreen = "login" },
-                                onGoToRegister = { currentScreen = "register" },
-                                onNavigateToSection = { section -> currentScreen = section },
-                                onAddNewProperty = {
-                                    isEditMode = false
-                                    editingTitle = ""
-                                    editingPrice = ""
-                                    currentScreen = "property_form"
-                                },
-                                onEditProperty = { title, price ->
-                                    isEditMode = true
-                                    editingTitle = title
-                                    editingPrice = price
-                                    currentScreen = "property_form"
-                                }
-                            )
-
-                            "arrendar" -> LeaseScreen(
-                                onGoToLogin = { currentScreen = "login" },
-                                onGoToRegister = { currentScreen = "register" },
-                                onNavigateToSection = { section -> currentScreen = section },
-                                onAddNewLease = {
-                                    isEditMode = false
-                                    editingTitle = ""
-                                    editingPrice = ""
-                                    currentScreen = "property_form"
-                                },
-                                onEditLease = { title, price ->
-                                    isEditMode = true
-                                    editingTitle = title
-                                    editingPrice = price
-                                    currentScreen = "property_form"
-                                }
-                            )
-                            "property_form" -> PropertyFormScreen(
-                                isEditing = isEditMode,
-                                initialTitle = editingTitle,
-                                initialPrice = editingPrice,
-                                onBack = { currentScreen = "sales" },
-                                onSubmitSuccess = { currentScreen = "sales" },
-                                onDeleteProperty = { currentScreen = "sales" }
-                            )
-                            "comprar" -> BuyScreen(
-                                onGoToLogin = { currentScreen = "login" },
-                                onGoToRegister = { currentScreen = "register" },
-                                onNavigateToSection = { section -> currentScreen = section },
-                                onViewDetails = { property ->
-                                    selectedBuyTitle = property.title
-                                    selectedBuyPrice = property.price
-                                    selectedBuyAddress = property.address
-                                    currentScreen = "buy_detail"
-                                }
-                            )
-                            "buy_detail" -> BuyDetailScreen(
-                                title = selectedBuyTitle,
-                                price = selectedBuyPrice,
-                                address = selectedBuyAddress,
-                                onBack = { currentScreen = "comprar" },
-                                onContactSeller = { currentScreen = "chat_detail" }
-                            )
-                            "rentar" -> RentScreen(
-                                onGoToLogin = { currentScreen = "login" },
-                                onGoToRegister = { currentScreen = "register" },
-                                onNavigateToSection = { section -> currentScreen = section },
-                                onScheduleVisit = { property, date, time ->
-                                    // Generamos el texto automático con la propiedad, fecha y hora
-                                    initialChatMessage = "¡Hola! Me gustaría agendar una visita para el inmueble '${property.title}' el día $date a las $time."
-                                    // Redirigimos directamente al detalle del chat
-                                    currentScreen = "chat_detail"
-                                }
-                            )
-                            "mensajes" -> MessagesScreen(
-                                onGoToLogin = { currentScreen = "login" },
-                                onGoToRegister = { currentScreen = "register" },
-                                onNavigateToSection = { section -> currentScreen = section },
-                                onOpenChat = { chat ->
-                                    currentScreen = "chat_detail"
-                                }
-                            )
-                            "chat_detail" -> ChatDetailScreen(
-                                contactName = "Carlos Mendoza",
-                                propertyTitle = "Residencia Moderna en Cañada",
-                                initialAutoMessage = initialChatMessage, // <-- Pasamos el mensaje automático
-                                onBack = {
-                                    initialChatMessage = "" // Limpiamos el mensaje al regresar
-                                    currentScreen = "mensajes"
-                                }
-                            )
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario") {
+                AuthenticatedHeader(
+                    onGoToMessages = { currentScreen = "mensajes" },
+                    onGoToSettings = { currentScreen = "configuracion" }
+                )
+            }
+        },
+        bottomBar = {
+            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario") {
+                FloatingIslandFooter(
+                    currentScreen = currentScreen,
+                    onTabSelected = { currentScreen = it }
+                )
+            }
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            when (currentScreen) {
+                "home" -> HomeScreen(
+                    onGoToLogin = { currentScreen = "login" },
+                    onGoToRegister = { currentScreen = "register" }
+                )
+                "login" -> LoginScreen(
+                    onBackToHome = { currentScreen = "home" },
+                    onGoToRegister = { currentScreen = "register" },
+                    onGoToVerifyEmail = { email ->
+                        registeredEmail = email
+                        currentScreen = "verification_sent"
+                    },
+                    onLoginSuccess = { currentScreen = "main" },
+                    onProfileIncomplete = { currentScreen = "profile_completion" }
+                )
+                "register" -> RegisterScreen(
+                    onBackToHome = { currentScreen = "home" },
+                    onGoToLogin = { currentScreen = "login" },
+                    onRegisterSuccess = { email ->
+                        registeredEmail = email
+                        currentScreen = "verification_sent"
+                    },
+                    onProfileIncomplete = { currentScreen = "profile_completion" }
+                )
+                "verification_sent" -> VerificationSentScreen(
+                    email = registeredEmail,
+                    onGoToLogin = { currentScreen = "login" },
+                    onBackToHome = { currentScreen = "home" }
+                )
+                "profile_completion" -> ProfileCompletionScreen(
+                    onComplete = { currentScreen = "main" }
+                )
+                "main" -> MainDashboardScreen()
+                "vender" -> SellPropertiesScreen(
+                    refreshKey = listRefreshKey,
+                    onCreateProperty = {
+                        formOperationType = "sale"
+                        editPropertyId = null
+                        fromManage = false
+                        currentScreen = "formulario"
+                    },
+                    onPropertyClick = { id ->
+                        managePropertyId = id
+                        manageOperationType = "sale"
+                        currentScreen = "gestion"
+                    }
+                )
+                "arrendar" -> LeasePropertiesScreen(
+                    refreshKey = listRefreshKey,
+                    onCreateProperty = {
+                        formOperationType = "rent"
+                        editPropertyId = null
+                        fromManage = false
+                        currentScreen = "formulario"
+                    },
+                    onPropertyClick = { id ->
+                        managePropertyId = id
+                        manageOperationType = "rent"
+                        currentScreen = "gestion"
+                    }
+                )
+                "comprar" -> BuyPropertyScreen(
+                    onPropertyClick = { id ->
+                        selectedPropertyId = id
+                        previousScreen = "comprar"
+                        currentScreen = "detalle"
+                    }
+                )
+                "rentar" -> RentPropertyScreen(
+                    onPropertyClick = { id ->
+                        selectedPropertyId = id
+                        previousScreen = "rentar"
+                        currentScreen = "detalle"
+                    }
+                )
+                "detalle" -> PropertyDetailScreen(
+                    propertyId = selectedPropertyId ?: 0,
+                    onBack = { currentScreen = previousScreen },
+                    onEdit = { id ->
+                        editPropertyId = id
+                        currentScreen = "formulario"
+                    }
+                )
+                "gestion" -> ManagePropertyScreen(
+                    propertyId = managePropertyId ?: 0,
+                    onBack = {
+                        listRefreshKey++
+                        currentScreen = when (manageOperationType) {
+                            "sale" -> "vender"
+                            else -> "arrendar"
+                        }
+                    },
+                    onEdit = { id ->
+                        editPropertyId = id
+                        formOperationType = manageOperationType
+                        fromManage = true
+                        currentScreen = "formulario"
+                    }
+                )
+                "formulario" -> PropertyFormScreen(
+                    propertyId = editPropertyId,
+                    defaultOperationType = formOperationType,
+                    onBack = {
+                        if (fromManage) {
+                            currentScreen = "gestion"
+                            fromManage = false
+                        } else {
+                            currentScreen = when (formOperationType) {
+                                "sale" -> "vender"
+                                "rent" -> "arrendar"
+                                else -> previousScreen
+                            }
+                        }
+                    },
+                    onSaved = {
+                        listRefreshKey++
+                        if (fromManage) {
+                            currentScreen = when (formOperationType) {
+                                "sale" -> "vender"
+                                "rent" -> "arrendar"
+                                else -> previousScreen
+                            }
+                            fromManage = false
+                        } else {
+                            currentScreen = when (formOperationType) {
+                                "sale" -> "vender"
+                                "rent" -> "arrendar"
+                                else -> previousScreen
+                            }
                         }
                     }
-                }
+                )
+                "mensajes" -> MessagesScreen()
+                "configuracion" -> SettingsScreen(
+                    onLogoutSuccess = { currentScreen = "login" }
+                )
             }
         }
     }
