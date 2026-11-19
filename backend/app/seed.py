@@ -29,7 +29,7 @@ def seed_amenities(db: Session):
         "Área infantil",
         "Área de asador",
         "Pet friendly",
-        "Amoblado",
+        "Amueblado",
     ]
     for name in amenities:
         exists = db.query(Amenity).filter(Amenity.name == name).first()
