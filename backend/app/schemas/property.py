@@ -7,6 +7,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.models.property import ListingStatus, PropertyType
 
 
+class PropertyImage(BaseModel):
+    url: str
+    media_type: str
+    display_order: int = 0
+
+
 class PropertyCreate(BaseModel):
     operation_type: str
     listing_title: str = Field(max_length=150)
@@ -32,6 +38,8 @@ class PropertyCreate(BaseModel):
     parking_spaces: Optional[int] = Field(default=None, ge=0)
     stories_floors: Optional[int] = Field(default=None, ge=0)
     property_age_years: Optional[int] = Field(default=None, ge=0)
+    amenity_ids: list[int] = []
+    images: list[PropertyImage] = []
 
 
 class PropertyUpdate(BaseModel):
@@ -58,6 +66,17 @@ class PropertyUpdate(BaseModel):
     parking_spaces: Optional[int] = Field(default=None, ge=0)
     stories_floors: Optional[int] = Field(default=None, ge=0)
     property_age_years: Optional[int] = Field(default=None, ge=0)
+    amenity_ids: Optional[list[int]] = None
+    images: Optional[list[PropertyImage]] = None
+
+
+class PropertyImageResponse(BaseModel):
+    media_id: int
+    media_type: str
+    file_url: str
+    display_order: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PropertyResponse(BaseModel):
@@ -90,6 +109,8 @@ class PropertyResponse(BaseModel):
     property_age_years: Optional[int] = None
     published_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    amenities: list[str] = []
+    images: list[PropertyImageResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -58,3 +58,9 @@ class Property(Base):
 
     owner = relationship("User")
     operation_type = relationship("OperationType")
+    amenities = relationship(
+        "Amenity", secondary="property_amenities", back_populates="properties"
+    )
+    media = relationship(
+        "PropertyMedia", back_populates="property", cascade="all, delete-orphan"
+    )

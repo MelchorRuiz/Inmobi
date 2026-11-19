@@ -6,8 +6,10 @@ from sqlalchemy.orm import Session
 
 from app.dependencies import get_current_user, require_roles
 from app.database import get_db
+from app.models.amenity import Amenity
 from app.models.operation_type import OperationType
 from app.models.property import ListingStatus, Property, PropertyType
+from app.models.property_media import PropertyMedia
 from app.models.user import Role, User
 from app.schemas.property import PropertyCreate, PropertyResponse, PropertyUpdate
 
@@ -35,11 +37,34 @@ def create_property(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Operation type '{property_in.operation_type}' not found",
         )
-    property_data = property_in.model_dump(exclude={"operation_type"})
+
+    property_data = property_in.model_dump(exclude={"operation_type", "amenity_ids", "images"})
     property_data["owner_user_id"] = current_user.id
     property_data["operation_type_id"] = operation.operation_type_id
+
     db_property = Property(**property_data)
+
+    if property_in.amenity_ids:
+        amenities = db.query(Amenity).filter(Amenity.amenity_id.in_(property_in.amenity_ids)).all()
+        if len(amenities) != len(property_in.amenity_ids):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="One or more amenity IDs are invalid",
+            )
+        db_property.amenities = amenities
+
     db.add(db_property)
+    db.flush()
+
+    for idx, img in enumerate(property_in.images):
+        media = PropertyMedia(
+            property_id=db_property.property_id,
+            media_type=img.media_type,
+            file_url=img.url,
+            display_order=img.display_order or idx,
+        )
+        db.add(media)
+
     db.commit()
     db.refresh(db_property)
     return _to_response(db_property)
@@ -130,9 +155,31 @@ def update_property(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You can only edit your own properties"
         )
-    update_data = property_in.model_dump(exclude_unset=True)
+
+    update_data = property_in.model_dump(exclude_unset=True, exclude={"amenity_ids", "images"})
     for field, value in update_data.items():
         setattr(db_property, field, value)
+
+    if property_in.amenity_ids is not None:
+        amenities = db.query(Amenity).filter(Amenity.amenity_id.in_(property_in.amenity_ids)).all()
+        if len(amenities) != len(property_in.amenity_ids):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="One or more amenity IDs are invalid",
+            )
+        db_property.amenities = amenities
+
+    if property_in.images is not None:
+        db.query(PropertyMedia).filter(PropertyMedia.property_id == property_id).delete()
+        for idx, img in enumerate(property_in.images):
+            media = PropertyMedia(
+                property_id=property_id,
+                media_type=img.media_type,
+                file_url=img.url,
+                display_order=img.display_order or idx,
+            )
+            db.add(media)
+
     db.commit()
     db.refresh(db_property)
     return _to_response(db_property)
@@ -158,7 +205,8 @@ def delete_property(
 
 
 def _to_response(prop: Property) -> PropertyResponse:
-    return PropertyResponse(
-        **{c.name: getattr(prop, c.name) for c in prop.__table__.columns},
-        operation_name=prop.operation_type.operation_name,
-    )
+    response_data = {c.name: getattr(prop, c.name) for c in prop.__table__.columns}
+    response_data["operation_name"] = prop.operation_type.operation_name
+    response_data["amenities"] = [a.name for a in prop.amenities]
+    response_data["images"] = sorted(prop.media, key=lambda m: m.display_order)
+    return PropertyResponse.model_validate(response_data)
