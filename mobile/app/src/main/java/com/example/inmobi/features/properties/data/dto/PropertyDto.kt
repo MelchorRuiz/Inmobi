@@ -33,5 +33,15 @@ data class PropertyDto(
     @Json(name = "stories_floors") val storiesFloors: Int?,
     @Json(name = "property_age_years") val propertyAgeYears: Int?,
     @Json(name = "published_at") val publishedAt: String?,
-    @Json(name = "updated_at") val updatedAt: String?
+    @Json(name = "updated_at") val updatedAt: String?,
+    @Json(name = "amenities") val amenities: List<String> = emptyList(),
+    @Json(name = "images") val images: List<PropertyImageResponse> = emptyList()
+)
+
+@JsonClass(generateAdapter = true)
+data class PropertyImageResponse(
+    @Json(name = "media_id") val mediaId: Int,
+    @Json(name = "media_type") val mediaType: String,
+    @Json(name = "file_url") val fileUrl: String,
+    @Json(name = "display_order") val displayOrder: Int
 )

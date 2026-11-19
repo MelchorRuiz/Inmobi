@@ -1,5 +1,6 @@
 package com.example.inmobi.features.properties.domain
 
+import com.example.inmobi.BuildConfig
 import com.example.inmobi.features.properties.data.dto.PropertyDto
 
 enum class OperationType(val apiName: String) {
@@ -36,6 +37,12 @@ enum class ListingStatus(val apiName: String) {
     }
 }
 
+data class PropertyImage(
+    val mediaId: Int,
+    val url: String,
+    val displayOrder: Int
+)
+
 data class Property(
     val id: Int,
     val ownerUserId: Int,
@@ -55,7 +62,8 @@ data class Property(
     val builtAreaSqm: Double?,
     val lotSizeSqm: Double?,
     val parkingSpaces: Int?,
-    val publishedAt: String?
+    val publishedAt: String?,
+    val images: List<PropertyImage> = emptyList()
 )
 
 fun PropertyDto.toDomain(): Property = Property(
@@ -77,7 +85,15 @@ fun PropertyDto.toDomain(): Property = Property(
     builtAreaSqm = builtAreaSqm,
     lotSizeSqm = lotSizeSqm,
     parkingSpaces = parkingSpaces,
-    publishedAt = publishedAt
+    publishedAt = publishedAt,
+    images = images.map { img ->
+        val fullUrl = if (img.fileUrl.startsWith("http")) {
+            img.fileUrl
+        } else {
+            "${BuildConfig.BASE_URL}${img.fileUrl}"
+        }
+        PropertyImage(img.mediaId, fullUrl, img.displayOrder)
+    }.sortedBy { it.displayOrder }
 )
 
 fun List<PropertyDto>.toDomain(): List<Property> = map { it.toDomain() }

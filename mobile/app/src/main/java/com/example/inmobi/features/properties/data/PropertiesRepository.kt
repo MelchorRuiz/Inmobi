@@ -1,9 +1,14 @@
 package com.example.inmobi.features.properties.data
 
 import com.example.inmobi.core.network.RetrofitClient
+import com.example.inmobi.features.properties.data.dto.AmenityDto
 import com.example.inmobi.features.properties.data.dto.PropertyCreateRequest
 import com.example.inmobi.features.properties.data.dto.PropertyDto
 import com.example.inmobi.features.properties.data.dto.PropertyUpdateRequest
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
 sealed class Result<out T> {
     data class Success<T>(val data: T) : Result<T>()
@@ -14,6 +19,8 @@ sealed class Result<out T> {
 class PropertiesRepository {
 
     private val api: PropertiesApi = RetrofitClient.create()
+    private val filesApi: FilesApi = RetrofitClient.create()
+    private val amenitiesApi: AmenitiesApi = RetrofitClient.create()
 
     suspend fun listProperties(
         operationType: String? = null,
@@ -69,6 +76,30 @@ class PropertiesRepository {
 
     suspend fun deleteProperty(propertyId: Int): Result<Unit> {
         return safeApiCall { api.deleteProperty(propertyId) }
+    }
+
+    suspend fun uploadImage(file: File): Result<String> {
+        return try {
+            val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+            val part = MultipartBody.Part.createFormData("file", file.name, requestBody)
+            val response = filesApi.uploadFile(part)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    Result.Success(body.url)
+                } else {
+                    Result.Error(response.code(), "Empty response")
+                }
+            } else {
+                Result.Error(response.code(), response.message())
+            }
+        } catch (e: Exception) {
+            Result.NetworkError
+        }
+    }
+
+    suspend fun getAmenities(): Result<List<AmenityDto>> {
+        return safeApiCall { amenitiesApi.listAmenities() }
     }
 
     private suspend fun <T> safeApiCall(call: suspend () -> retrofit2.Response<T>): Result<T> {

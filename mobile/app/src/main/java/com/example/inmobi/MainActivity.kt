@@ -32,6 +32,10 @@ import com.example.inmobi.features.properties.ui.form.PropertyFormScreen
 import com.example.inmobi.features.properties.ui.lease.LeasePropertiesScreen
 import com.example.inmobi.features.properties.ui.manage.ManagePropertyScreen
 import com.example.inmobi.features.properties.ui.rent.RentPropertyScreen
+import com.example.inmobi.features.properties.ui.editsaleform.EditSalePropertyFormScreen
+import com.example.inmobi.features.properties.ui.editrentform.EditRentPropertyFormScreen
+import com.example.inmobi.features.properties.ui.rentform.RentPropertyFormScreen
+import com.example.inmobi.features.properties.ui.saleform.SalePropertyFormScreen
 import com.example.inmobi.features.properties.ui.sell.SellPropertiesScreen
 import com.example.inmobi.features.settings.ui.SettingsScreen
 
@@ -191,39 +195,101 @@ fun AppNavigation() {
                         currentScreen = "formulario"
                     }
                 )
-                "formulario" -> PropertyFormScreen(
-                    propertyId = editPropertyId,
-                    defaultOperationType = formOperationType,
-                    onBack = {
-                        if (fromManage) {
-                            currentScreen = "gestion"
-                            fromManage = false
-                        } else {
-                            currentScreen = when (formOperationType) {
-                                "sale" -> "vender"
-                                "rent" -> "arrendar"
-                                else -> previousScreen
+                "formulario" -> {
+                    if (formOperationType == "sale" && editPropertyId == null) {
+                        SalePropertyFormScreen(
+                            onBack = { currentScreen = "vender" },
+                            onSaved = {
+                                listRefreshKey++
+                                currentScreen = "vender"
                             }
-                        }
-                    },
-                    onSaved = {
-                        listRefreshKey++
-                        if (fromManage) {
-                            currentScreen = when (formOperationType) {
-                                "sale" -> "vender"
-                                "rent" -> "arrendar"
-                                else -> previousScreen
+                        )
+                    } else if (formOperationType == "sale" && editPropertyId != null) {
+                        EditSalePropertyFormScreen(
+                            propertyId = editPropertyId!!,
+                            onBack = {
+                                if (fromManage) {
+                                    currentScreen = "gestion"
+                                    fromManage = false
+                                } else {
+                                    currentScreen = "vender"
+                                }
+                            },
+                            onSaved = {
+                                listRefreshKey++
+                                if (fromManage) {
+                                    currentScreen = "gestion"
+                                    fromManage = false
+                                } else {
+                                    currentScreen = "vender"
+                                }
                             }
-                            fromManage = false
-                        } else {
-                            currentScreen = when (formOperationType) {
-                                "sale" -> "vender"
-                                "rent" -> "arrendar"
-                                else -> previousScreen
+                        )
+                    } else if (formOperationType == "rent" && editPropertyId == null) {
+                        RentPropertyFormScreen(
+                            onBack = { currentScreen = "arrendar" },
+                            onSaved = {
+                                listRefreshKey++
+                                currentScreen = "arrendar"
                             }
-                        }
+                        )
+                    } else if (formOperationType == "rent" && editPropertyId != null) {
+                        EditRentPropertyFormScreen(
+                            propertyId = editPropertyId!!,
+                            onBack = {
+                                if (fromManage) {
+                                    currentScreen = "gestion"
+                                    fromManage = false
+                                } else {
+                                    currentScreen = "arrendar"
+                                }
+                            },
+                            onSaved = {
+                                listRefreshKey++
+                                if (fromManage) {
+                                    currentScreen = "gestion"
+                                    fromManage = false
+                                } else {
+                                    currentScreen = "arrendar"
+                                }
+                            }
+                        )
+                    } else {
+                        PropertyFormScreen(
+                            propertyId = editPropertyId,
+                            defaultOperationType = formOperationType,
+                            onBack = {
+                                if (fromManage) {
+                                    currentScreen = "gestion"
+                                    fromManage = false
+                                } else {
+                                    currentScreen = when (formOperationType) {
+                                        "sale" -> "vender"
+                                        "rent" -> "arrendar"
+                                        else -> previousScreen
+                                    }
+                                }
+                            },
+                            onSaved = {
+                                listRefreshKey++
+                                if (fromManage) {
+                                    currentScreen = when (formOperationType) {
+                                        "sale" -> "vender"
+                                        "rent" -> "arrendar"
+                                        else -> previousScreen
+                                    }
+                                    fromManage = false
+                                } else {
+                                    currentScreen = when (formOperationType) {
+                                        "sale" -> "vender"
+                                        "rent" -> "arrendar"
+                                        else -> previousScreen
+                                    }
+                                }
+                            }
+                        )
                     }
-                )
+                }
                 "mensajes" -> MessagesScreen()
                 "configuracion" -> SettingsScreen(
                     onLogoutSuccess = { currentScreen = "login" }

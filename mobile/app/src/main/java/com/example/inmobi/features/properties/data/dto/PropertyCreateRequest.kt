@@ -19,6 +19,8 @@ data class PropertyCreateRequest(
     @Json(name = "city") val city: String,
     @Json(name = "state_province") val stateProvince: String,
     @Json(name = "country") val country: String = "Mexico",
+    @Json(name = "latitude") val latitude: Double? = null,
+    @Json(name = "longitude") val longitude: Double? = null,
     @Json(name = "lot_size_sqm") val lotSizeSqm: Double? = null,
     @Json(name = "built_area_sqm") val builtAreaSqm: Double? = null,
     @Json(name = "bedrooms") val bedrooms: Int? = null,
@@ -26,5 +28,7 @@ data class PropertyCreateRequest(
     @Json(name = "half_bathrooms") val halfBathrooms: Int? = null,
     @Json(name = "parking_spaces") val parkingSpaces: Int? = null,
     @Json(name = "stories_floors") val storiesFloors: Int? = null,
-    @Json(name = "property_age_years") val propertyAgeYears: Int? = null
+    @Json(name = "property_age_years") val propertyAgeYears: Int? = null,
+    @Json(name = "amenity_ids") val amenityIds: List<Int> = emptyList(),
+    @Json(name = "images") val images: List<PropertyImageRequest> = emptyList()
 )

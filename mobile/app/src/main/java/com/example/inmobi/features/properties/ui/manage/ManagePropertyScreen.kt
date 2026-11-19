@@ -12,7 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -44,11 +47,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.inmobi.core.ui.theme.PrimaryTeal
 import com.example.inmobi.features.properties.ui.common.ErrorState
 import com.example.inmobi.features.properties.ui.common.LoadingState
@@ -130,19 +137,59 @@ fun ManagePropertyScreen(
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
                 ) {
+                    val images = property.images
+                    val pagerState = rememberPagerState(pageCount = { images.size.coerceAtLeast(1) })
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
+                            .height(220.dp)
                             .background(colorScheme.surfaceVariant)
                     ) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Icon(
-                                Icons.Outlined.RealEstateAgent,
-                                null,
-                                tint = PrimaryTeal.copy(alpha = 0.4f),
-                                modifier = Modifier.size(64.dp)
-                            )
+                        if (images.isNotEmpty()) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize()
+                            ) { page ->
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(images[page].url)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = property.listingTitle,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+
+                            if (images.size > 1) {
+                                Row(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomCenter)
+                                        .padding(bottom = 12.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    repeat(images.size) { index ->
+                                        Box(
+                                            modifier = Modifier
+                                                .size(if (index == pagerState.currentPage) 8.dp else 6.dp)
+                                                .background(
+                                                    if (index == pagerState.currentPage) Color.White else Color.White.copy(alpha = 0.5f),
+                                                    CircleShape
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Outlined.RealEstateAgent,
+                                    null,
+                                    tint = PrimaryTeal.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(64.dp)
+                                )
+                            }
                         }
                     }
 

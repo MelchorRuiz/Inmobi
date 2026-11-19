@@ -37,10 +37,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.inmobi.core.ui.theme.PrimaryTeal
 import com.example.inmobi.features.properties.domain.Property
 
@@ -74,13 +78,26 @@ fun PropertyCard(
                     .height(140.dp)
                     .background(colorScheme.surfaceVariant)
             ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Outlined.RealEstateAgent,
-                        null,
-                        tint = PrimaryTeal.copy(alpha = 0.4f),
-                        modifier = Modifier.size(48.dp)
+                val coverImage = property.images.firstOrNull()
+                if (coverImage != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(coverImage.url)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = property.listingTitle,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Outlined.RealEstateAgent,
+                            null,
+                            tint = PrimaryTeal.copy(alpha = 0.4f),
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
                 }
                 Surface(
                     color = tagBgColor,
@@ -201,13 +218,26 @@ fun ManagePropertyCard(
                     .height(140.dp)
                     .background(colorScheme.surfaceVariant)
             ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Outlined.RealEstateAgent,
-                        null,
-                        tint = PrimaryTeal.copy(alpha = 0.4f),
-                        modifier = Modifier.size(48.dp)
+                val coverImage = property.images.firstOrNull()
+                if (coverImage != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(coverImage.url)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = property.listingTitle,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(
+                            Icons.Outlined.RealEstateAgent,
+                            null,
+                            tint = PrimaryTeal.copy(alpha = 0.4f),
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
                 }
                 Surface(
                     color = statusBgColor,
