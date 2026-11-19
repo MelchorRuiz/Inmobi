@@ -221,3 +221,6 @@ __marimo__/
 
 # Sqlite database
 inmobi.db
+
+# Uploaded files
+files/
