@@ -44,6 +44,7 @@ import com.example.inmobi.features.properties.ui.common.ErrorState
 import com.example.inmobi.features.properties.ui.common.LoadingState
 import com.example.inmobi.features.properties.ui.common.ManagePropertyCard
 import com.example.inmobi.features.properties.ui.common.MetricCard
+import com.example.inmobi.features.properties.ui.common.deviationLabel
 
 @Composable
 fun LeasePropertiesScreen(
@@ -135,13 +136,18 @@ fun LeasePropertiesScreen(
 
 private fun getStatusInfo(property: Property): StatusInfo {
     return when (property.listingStatus) {
-        "active" -> StatusInfo(
-            statusText = "Disponible",
-            statusColor = PrimaryTeal,
-            statusBgColor = Color(0xFFEBF5F4),
-            statText = "Contrato activo",
-            actionText = "Editar"
-        )
+        "active" -> {
+            val statText = property.priceEstimation?.let {
+                deviationLabel(property.price, it.estimatedPrice)?.label
+            } ?: "Contrato activo"
+            StatusInfo(
+                statusText = "Disponible",
+                statusColor = PrimaryTeal,
+                statusBgColor = Color(0xFFEBF5F4),
+                statText = statText,
+                actionText = "Editar"
+            )
+        }
         "cancelled" -> StatusInfo(
             statusText = "Pausada",
             statusColor = Color(0xFFD97706),

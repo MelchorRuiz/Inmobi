@@ -43,6 +43,14 @@ data class PropertyImage(
     val displayOrder: Int
 )
 
+data class PriceEstimation(
+    val estimatedPrice: Double,
+    val minPrice: Double,
+    val maxPrice: Double,
+    val confidenceScore: Double,
+    val modelVersion: String
+)
+
 data class Property(
     val id: Int,
     val ownerUserId: Int,
@@ -53,6 +61,9 @@ data class Property(
     val currency: String,
     val listingStatus: String,
     val propertyType: String,
+    val streetAddress: String?,
+    val neighborhood: String?,
+    val postalCode: String?,
     val city: String,
     val stateProvince: String,
     val country: String,
@@ -62,8 +73,13 @@ data class Property(
     val builtAreaSqm: Double?,
     val lotSizeSqm: Double?,
     val parkingSpaces: Int?,
+    val storiesFloors: Int?,
+    val propertyAgeYears: Int?,
+    val maintenanceFee: Double?,
+    val amenities: List<String> = emptyList(),
     val publishedAt: String?,
-    val images: List<PropertyImage> = emptyList()
+    val images: List<PropertyImage> = emptyList(),
+    val priceEstimation: PriceEstimation? = null
 )
 
 fun PropertyDto.toDomain(): Property = Property(
@@ -76,6 +92,9 @@ fun PropertyDto.toDomain(): Property = Property(
     currency = currency,
     listingStatus = listingStatus,
     propertyType = propertyType,
+    streetAddress = streetAddress,
+    neighborhood = neighborhood,
+    postalCode = postalCode,
     city = city,
     stateProvince = stateProvince,
     country = country,
@@ -85,6 +104,10 @@ fun PropertyDto.toDomain(): Property = Property(
     builtAreaSqm = builtAreaSqm,
     lotSizeSqm = lotSizeSqm,
     parkingSpaces = parkingSpaces,
+    storiesFloors = storiesFloors,
+    propertyAgeYears = propertyAgeYears,
+    maintenanceFee = maintenanceFee,
+    amenities = amenities,
     publishedAt = publishedAt,
     images = images.map { img ->
         val fullUrl = if (img.fileUrl.startsWith("http")) {
@@ -93,7 +116,16 @@ fun PropertyDto.toDomain(): Property = Property(
             "${BuildConfig.BASE_URL}${img.fileUrl}"
         }
         PropertyImage(img.mediaId, fullUrl, img.displayOrder)
-    }.sortedBy { it.displayOrder }
+    }.sortedBy { it.displayOrder },
+    priceEstimation = priceEstimation?.let {
+        PriceEstimation(
+            estimatedPrice = it.estimatedPrice.toDoubleOrNull() ?: 0.0,
+            minPrice = it.minPrice.toDoubleOrNull() ?: 0.0,
+            maxPrice = it.maxPrice.toDoubleOrNull() ?: 0.0,
+            confidenceScore = it.confidenceScore,
+            modelVersion = it.modelVersion
+        )
+    }
 )
 
 fun List<PropertyDto>.toDomain(): List<Property> = map { it.toDomain() }

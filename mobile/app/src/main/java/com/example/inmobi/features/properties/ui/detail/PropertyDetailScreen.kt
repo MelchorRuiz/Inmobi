@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,7 +26,13 @@ import androidx.compose.material.icons.filled.Bed
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Height
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.MeetingRoom
 import androidx.compose.material.icons.outlined.RealEstateAgent
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +48,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -48,19 +58,27 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.inmobi.core.network.NetworkModule
 import com.example.inmobi.core.ui.theme.PrimaryTeal
+import com.example.inmobi.features.auth.ui.MainViewModel
 import com.example.inmobi.features.properties.ui.common.ErrorState
 import com.example.inmobi.features.properties.ui.common.LoadingState
+import com.example.inmobi.features.properties.ui.common.PriceEstimationBlock
+import com.example.inmobi.features.properties.ui.common.formatPrice
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PropertyDetailScreen(
     propertyId: Int,
     onBack: () -> Unit = {},
-    onEdit: (Int) -> Unit = {},
     onDelete: (Int) -> Unit = {},
-    viewModel: PropertyDetailViewModel = viewModel()
+    viewModel: PropertyDetailViewModel = viewModel(),
+    mainViewModel: MainViewModel = viewModel(
+        factory = MainViewModel.Factory(NetworkModule.authRepository)
+    )
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val mainState by mainViewModel.state.collectAsStateWithLifecycle()
     val colorScheme = MaterialTheme.colorScheme
 
     LaunchedEffect(propertyId) {
@@ -97,6 +115,7 @@ fun PropertyDetailScreen(
                 val property = uiState.property!!
                 val images = property.images
                 val pagerState = rememberPagerState(pageCount = { images.size.coerceAtLeast(1) })
+                val isOwner = mainState.user?.id?.toInt() == property.ownerUserId
 
                 Box(
                     modifier = Modifier
@@ -152,6 +171,20 @@ fun PropertyDetailScreen(
                 }
 
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+                    Surface(
+                        color = colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        Text(
+                            translatePropertyType(property.propertyType),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = PrimaryTeal,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                        )
+                    }
+
                     Text(
                         property.listingTitle,
                         fontSize = 20.sp,
@@ -165,52 +198,175 @@ fun PropertyDetailScreen(
                         fontWeight = FontWeight.ExtraBold,
                         color = PrimaryTeal
                     )
-                    Spacer(Modifier.height(12.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.LocationOn, null, tint = PrimaryTeal, modifier = Modifier.size(16.dp))
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            "${property.city}, ${property.stateProvince}, ${property.country}",
-                            fontSize = 13.sp,
-                            color = colorScheme.onSurfaceVariant
-                        )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    val fullAddress = buildList {
+                        property.streetAddress?.takeIf { it.isNotBlank() }?.let { add(it) }
+                        property.neighborhood?.takeIf { it.isNotBlank() }?.let { add(it) }
+                        property.postalCode?.takeIf { it.isNotBlank() }?.let { add("CP $it") }
+                    }.joinToString(", ")
+
+                    if (fullAddress.isNotBlank()) {
+                        Row(verticalAlignment = Alignment.Top) {
+                            Icon(
+                                Icons.Outlined.LocationOn,
+                                null,
+                                tint = PrimaryTeal,
+                                modifier = Modifier.size(18.dp).padding(top = 2.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    fullAddress,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = colorScheme.onSurface
+                                )
+                                Text(
+                                    "${property.city}, ${property.stateProvince}, ${property.country}",
+                                    fontSize = 12.sp,
+                                    color = colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.LocationOn, null, tint = PrimaryTeal, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                "${property.city}, ${property.stateProvince}, ${property.country}",
+                                fontSize = 13.sp,
+                                color = colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
 
-                    Spacer(Modifier.height(20.dp))
+                    Text("Especificaciones", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
+                    Spacer(Modifier.height(10.dp))
 
-                    val specs = buildList {
-                        property.bedrooms?.let { add(Spec(Icons.Default.Bed, "$it hab")) }
-                        val baths = (property.fullBathrooms ?: 0) + (property.halfBathrooms ?: 0) * 0.5
-                        if (baths > 0) {
-                            add(Spec(Icons.Default.Bathtub, formatBaths(baths)))
+                    val specs = buildList<DetailSpec> {
+                        property.bedrooms?.let { add(DetailSpec(Icons.Default.Bed, "$it", "Recámaras")) }
+                        val totalBaths = (property.fullBathrooms ?: 0) + (property.halfBathrooms ?: 0)
+                        if (totalBaths > 0) {
+                            val bathsText = if (property.halfBathrooms ?: 0 > 0) {
+                                "${property.fullBathrooms ?: 0} completos + ${property.halfBathrooms} medios"
+                            } else {
+                                "$totalBaths"
+                            }
+                            add(DetailSpec(Icons.Default.Bathtub, bathsText, "Baños"))
                         }
-                        property.builtAreaSqm?.let { add(Spec(Icons.Default.SquareFoot, "${it.toInt()} m2")) }
-                        property.parkingSpaces?.let { add(Spec(Icons.Default.DirectionsCar, "$it est.")) }
+                        property.builtAreaSqm?.let { add(DetailSpec(Icons.Default.SquareFoot, "${it.toInt()} m²", "Construcción")) }
+                        property.lotSizeSqm?.let { add(DetailSpec(Icons.Outlined.MeetingRoom, "${it.toInt()} m²", "Terreno")) }
+                        property.storiesFloors?.let { add(DetailSpec(Icons.Outlined.Layers, "$it", "Pisos")) }
+                        property.parkingSpaces?.let { add(DetailSpec(Icons.Default.DirectionsCar, "$it", "Estacionamiento")) }
+                        property.propertyAgeYears?.let { 
+                            val ageText = if (it == 0) "Nueva" else if (it == 1) "1 año" else "$it años"
+                            add(DetailSpec(Icons.Outlined.CalendarToday, ageText, "Antigüedad")) 
+                        }
                     }
 
                     if (specs.isNotEmpty()) {
-                        Row(
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            specs.take(4).forEach { spec ->
+                            specs.forEach { spec ->
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
-                                        .background(colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                        .fillMaxWidth()
+                                        .background(colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(spec.icon, null, tint = PrimaryTeal, modifier = Modifier.size(14.dp))
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(spec.label, fontSize = 11.sp, color = colorScheme.onSurface)
+                                    Icon(spec.icon, null, tint = PrimaryTeal, modifier = Modifier.size(18.dp))
+                                    Spacer(Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(spec.label, fontSize = 11.sp, color = colorScheme.onSurfaceVariant)
+                                        Text(spec.value, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = colorScheme.onSurface)
+                                    }
                                 }
                             }
                         }
-                        Spacer(Modifier.height(20.dp))
+                        Spacer(Modifier.height(16.dp))
+                    }
+
+                    property.maintenanceFee?.let { fee ->
+                        if (fee > 0) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(colorScheme.surfaceVariant, RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Outlined.AttachMoney, null, tint = PrimaryTeal, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text("Mantenimiento", fontSize = 11.sp, color = colorScheme.onSurfaceVariant)
+                                    Text(
+                                        formatPrice(fee, property.currency, ""),
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = colorScheme.onSurface
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.height(16.dp))
+                        }
+                    }
+
+                    if (property.amenities.isNotEmpty()) {
+                        Text("Amenidades y servicios", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
+                        Spacer(Modifier.height(10.dp))
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            property.amenities.forEach { amenity ->
+                                Surface(
+                                    color = PrimaryTeal.copy(alpha = 0.1f),
+                                    shape = RoundedCornerShape(20.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Outlined.Check,
+                                            null,
+                                            tint = PrimaryTeal,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            formatAmenityName(amenity),
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = PrimaryTeal
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+
+                    if (property.priceEstimation != null) {
+                        PriceEstimationBlock(
+                            priceEstimation = property.priceEstimation,
+                            listingPrice = property.price,
+                            currency = property.currency,
+                            operationName = property.operationName
+                        )
+                        Spacer(Modifier.height(16.dp))
                     }
 
                     if (property.description != null && property.description.isNotBlank()) {
-                        Text("Descripcion", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
+                        Text("Descripción", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
                         Spacer(Modifier.height(8.dp))
                         Text(
                             property.description,
@@ -218,32 +374,19 @@ fun PropertyDetailScreen(
                             color = colorScheme.onSurfaceVariant,
                             lineHeight = 18.sp
                         )
-                        Spacer(Modifier.height(20.dp))
+                        Spacer(Modifier.height(16.dp))
                     }
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                    if (!isOwner) {
                         Button(
                             onClick = { },
-                            modifier = Modifier.weight(1f).height(44.dp),
+                            modifier = Modifier.fillMaxWidth().height(44.dp),
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
                         ) {
-                            Text(
-                                if (property.operationName == "rent") "Agendar visita" else "Contactar",
-                                fontSize = 13.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Text("Me interesa esta propiedad", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         }
-                        OutlinedButton(
-                            onClick = { onEdit(property.id) },
-                            modifier = Modifier.weight(1f).height(44.dp),
-                            shape = RoundedCornerShape(10.dp)
-                        ) {
-                            Text("Editar", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = PrimaryTeal)
-                        }
+                        Spacer(Modifier.height(16.dp))
                     }
                 }
             }
@@ -253,27 +396,27 @@ fun PropertyDetailScreen(
     }
 }
 
-private data class Spec(val icon: androidx.compose.ui.graphics.vector.ImageVector, val label: String)
+private data class DetailSpec(val icon: ImageVector, val value: String, val label: String)
 
-private fun formatPrice(price: Double, currency: String, operationName: String): String {
-    val formatted = if (price == price.toLong().toDouble()) {
-        String.format("%,d", price.toLong())
-    } else {
-        String.format("%,.2f", price)
-    }.replace(",", "X").replace(".", ",").replace("X", ".")
-
-    val suffix = when (operationName) {
-        "rent" -> " / mes"
-        else -> ""
+private fun translatePropertyType(type: String): String {
+    return when (type.lowercase()) {
+        "house" -> "Casa"
+        "apartment" -> "Departamento"
+        "land" -> "Terreno"
+        "office" -> "Oficina"
+        "commercial_premise" -> "Local comercial"
+        "warehouse" -> "Bodega"
+        "industrial" -> "Nave industrial"
+        "parking" -> "Estacionamiento"
+        else -> type.replaceFirstChar { it.uppercase() }
     }
-
-    return "$$formatted $currency$suffix"
 }
 
-private fun formatBaths(baths: Double): String {
-    return if (baths == baths.toLong().toDouble()) {
-        "${baths.toLong()} banos"
-    } else {
-        "%.1f banos".format(baths)
-    }
+private fun formatAmenityName(amenity: String): String {
+    return amenity
+        .replace("_", " ")
+        .split(" ")
+        .joinToString(" ") { word ->
+            word.replaceFirstChar { it.uppercase() }
+        }
 }

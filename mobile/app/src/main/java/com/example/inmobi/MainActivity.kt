@@ -173,11 +173,7 @@ fun AppNavigation() {
                 )
                 "detalle" -> PropertyDetailScreen(
                     propertyId = selectedPropertyId ?: 0,
-                    onBack = { currentScreen = previousScreen },
-                    onEdit = { id ->
-                        editPropertyId = id
-                        currentScreen = "formulario"
-                    }
+                    onBack = { currentScreen = previousScreen }
                 )
                 "gestion" -> ManagePropertyScreen(
                     propertyId = managePropertyId ?: 0,

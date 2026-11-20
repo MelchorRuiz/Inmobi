@@ -59,6 +59,8 @@ import coil.request.ImageRequest
 import com.example.inmobi.core.ui.theme.PrimaryTeal
 import com.example.inmobi.features.properties.ui.common.ErrorState
 import com.example.inmobi.features.properties.ui.common.LoadingState
+import com.example.inmobi.features.properties.ui.common.PriceEstimationBlock
+import com.example.inmobi.features.properties.ui.common.formatPrice
 
 @Composable
 fun ManagePropertyScreen(
@@ -207,6 +209,15 @@ fun ManagePropertyScreen(
                             fontWeight = FontWeight.ExtraBold,
                             color = PrimaryTeal
                         )
+                        if (property.priceEstimation != null) {
+                            Spacer(Modifier.height(12.dp))
+                            PriceEstimationBlock(
+                                priceEstimation = property.priceEstimation,
+                                listingPrice = property.price,
+                                currency = property.currency,
+                                operationName = property.operationName
+                            )
+                        }
                         Spacer(Modifier.height(12.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Outlined.LocationOn, null, tint = PrimaryTeal, modifier = Modifier.size(16.dp))
@@ -294,21 +305,6 @@ fun ManagePropertyScreen(
 }
 
 private data class Spec(val icon: ImageVector, val label: String)
-
-private fun formatPrice(price: Double, currency: String, operationName: String): String {
-    val formatted = if (price == price.toLong().toDouble()) {
-        String.format("%,d", price.toLong())
-    } else {
-        String.format("%,.2f", price)
-    }.replace(",", "X").replace(".", ",").replace("X", ".")
-
-    val suffix = when (operationName) {
-        "rent" -> " / mes"
-        else -> ""
-    }
-
-    return "$$formatted $currency$suffix"
-}
 
 private fun formatBaths(baths: Double): String {
     return if (baths == baths.toLong().toDouble()) {

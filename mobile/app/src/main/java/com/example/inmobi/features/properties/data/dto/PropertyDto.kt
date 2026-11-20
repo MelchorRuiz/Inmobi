@@ -4,6 +4,15 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
+data class PriceEstimationDto(
+    @Json(name = "estimated_price") val estimatedPrice: String,
+    @Json(name = "min_price") val minPrice: String,
+    @Json(name = "max_price") val maxPrice: String,
+    @Json(name = "confidence_score") val confidenceScore: Double,
+    @Json(name = "model_version") val modelVersion: String
+)
+
+@JsonClass(generateAdapter = true)
 data class PropertyDto(
     @Json(name = "property_id") val propertyId: Int,
     @Json(name = "owner_user_id") val ownerUserId: Int,
@@ -35,7 +44,8 @@ data class PropertyDto(
     @Json(name = "published_at") val publishedAt: String?,
     @Json(name = "updated_at") val updatedAt: String?,
     @Json(name = "amenities") val amenities: List<String> = emptyList(),
-    @Json(name = "images") val images: List<PropertyImageResponse> = emptyList()
+    @Json(name = "images") val images: List<PropertyImageResponse> = emptyList(),
+    @Json(name = "price_estimation") val priceEstimation: PriceEstimationDto? = null
 )
 
 @JsonClass(generateAdapter = true)

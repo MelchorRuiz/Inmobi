@@ -64,6 +64,7 @@ fun PropertyCard(
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
+        onClick = onActionClick,
         modifier = modifier
             .fillMaxWidth()
             .shadow(elevation = 3.dp, shape = RoundedCornerShape(16.dp)),
@@ -141,6 +142,15 @@ fun PropertyCard(
                     fontWeight = FontWeight.ExtraBold,
                     color = PrimaryTeal
                 )
+                if (property.priceEstimation != null) {
+                    Spacer(Modifier.height(4.dp))
+                    PriceEstimationCompact(
+                        priceEstimation = property.priceEstimation,
+                        listingPrice = property.price,
+                        currency = property.currency,
+                        operationName = property.operationName
+                    )
+                }
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -261,6 +271,15 @@ fun ManagePropertyCard(
                     fontWeight = FontWeight.ExtraBold,
                     color = colorScheme.onSurface
                 )
+                if (property.priceEstimation != null) {
+                    Spacer(Modifier.height(2.dp))
+                    PriceEstimationCompact(
+                        priceEstimation = property.priceEstimation,
+                        listingPrice = property.price,
+                        currency = property.currency,
+                        operationName = property.operationName
+                    )
+                }
                 Spacer(Modifier.height(2.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.LocationOn, null, tint = PrimaryTeal, modifier = Modifier.size(13.dp))
@@ -340,21 +359,6 @@ fun EmptyState(message: String) {
     ) {
         Text(message, textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-}
-
-private fun formatPrice(price: Double, currency: String, operationName: String): String {
-    val formatted = if (price == price.toLong().toDouble()) {
-        String.format("%,d", price.toLong())
-    } else {
-        String.format("%,.2f", price)
-    }.replace(",", "X").replace(".", ",").replace("X", ".")
-
-    val suffix = when (operationName) {
-        "rent" -> " / mes"
-        else -> ""
-    }
-
-    return "$$formatted $currency$suffix"
 }
 
 private fun formatBathrooms(baths: Double): String {
