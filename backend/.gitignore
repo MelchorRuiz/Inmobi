@@ -224,3 +224,7 @@ inmobi.db
 
 # Uploaded files
 files/
+
+# ML artifacts and processed data
+ml/artifacts/
+ml/data/processed/

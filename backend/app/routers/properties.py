@@ -10,8 +10,10 @@ from app.models.amenity import Amenity
 from app.models.operation_type import OperationType
 from app.models.property import ListingStatus, Property, PropertyType
 from app.models.property_media import PropertyMedia
+from app.models.property_price_estimation import PropertyPriceEstimation
 from app.models.user import Role, User
 from app.schemas.property import PropertyCreate, PropertyResponse, PropertyUpdate
+from app.ml.predictor import predict_price
 
 
 router = APIRouter(prefix="/properties", tags=["Properties"])
@@ -67,6 +69,22 @@ def create_property(
 
     db.commit()
     db.refresh(db_property)
+
+    estimation = predict_price(db_property)
+    if estimation:
+        db_estimation = PropertyPriceEstimation(
+            property_id=db_property.property_id,
+            estimated_price=estimation["estimated_price"],
+            min_price=estimation["min_price"],
+            max_price=estimation["max_price"],
+            confidence_score=estimation["confidence_score"],
+            model_version=estimation["model_version"],
+            operation_type=estimation["operation_type"],
+        )
+        db.add(db_estimation)
+        db.commit()
+        db.refresh(db_property)
+
     return _to_response(db_property)
 
 
@@ -182,6 +200,41 @@ def update_property(
 
     db.commit()
     db.refresh(db_property)
+
+    estimation_fields = {
+        "property_type",
+        "state_province",
+        "built_area_sqm",
+        "lot_size_sqm",
+        "bedrooms",
+        "latitude",
+        "longitude",
+        "currency",
+    }
+    if any(field in update_data for field in estimation_fields):
+        estimation = predict_price(db_property)
+        if estimation:
+            if db_property.price_estimation:
+                db_property.price_estimation.estimated_price = estimation["estimated_price"]
+                db_property.price_estimation.min_price = estimation["min_price"]
+                db_property.price_estimation.max_price = estimation["max_price"]
+                db_property.price_estimation.confidence_score = estimation["confidence_score"]
+                db_property.price_estimation.model_version = estimation["model_version"]
+                db_property.price_estimation.operation_type = estimation["operation_type"]
+            else:
+                db_estimation = PropertyPriceEstimation(
+                    property_id=db_property.property_id,
+                    estimated_price=estimation["estimated_price"],
+                    min_price=estimation["min_price"],
+                    max_price=estimation["max_price"],
+                    confidence_score=estimation["confidence_score"],
+                    model_version=estimation["model_version"],
+                    operation_type=estimation["operation_type"],
+                )
+                db.add(db_estimation)
+            db.commit()
+            db.refresh(db_property)
+
     return _to_response(db_property)
 
 
@@ -209,4 +262,5 @@ def _to_response(prop: Property) -> PropertyResponse:
     response_data["operation_name"] = prop.operation_type.operation_name
     response_data["amenities"] = [a.name for a in prop.amenities]
     response_data["images"] = sorted(prop.media, key=lambda m: m.display_order)
+    response_data["price_estimation"] = prop.price_estimation
     return PropertyResponse.model_validate(response_data)

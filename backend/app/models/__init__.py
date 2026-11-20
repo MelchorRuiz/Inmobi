@@ -4,5 +4,6 @@ from app.models.operation_type import OperationType
 from app.models.property import ListingStatus, Property, PropertyType
 from app.models.property_amenity import property_amenities
 from app.models.property_media import MediaType, PropertyMedia
+from app.models.property_price_estimation import PropertyPriceEstimation
 from app.models.refresh_token import ClientType, RefreshToken
 from app.models.user import Role, User

@@ -79,6 +79,24 @@ class PropertyImageResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class PriceEstimationResponse(BaseModel):
+    estimated_price: Decimal
+    min_price: Decimal
+    max_price: Decimal
+    confidence_score: float
+    model_version: str
+    operation_type: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("estimated_price", "min_price", "max_price", mode="before")
+    @classmethod
+    def convert_to_decimal(cls, v):
+        if v is not None and not isinstance(v, Decimal):
+            return Decimal(str(v))
+        return v
+
+
 class PropertyResponse(BaseModel):
     property_id: int
     owner_user_id: int
@@ -111,6 +129,7 @@ class PropertyResponse(BaseModel):
     updated_at: Optional[datetime] = None
     amenities: list[str] = []
     images: list[PropertyImageResponse] = []
+    price_estimation: Optional[PriceEstimationResponse] = None
 
     model_config = ConfigDict(from_attributes=True)
 

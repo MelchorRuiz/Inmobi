@@ -64,3 +64,6 @@ class Property(Base):
     media = relationship(
         "PropertyMedia", back_populates="property", cascade="all, delete-orphan"
     )
+    price_estimation = relationship(
+        "PropertyPriceEstimation", back_populates="property", uselist=False, cascade="all, delete-orphan"
+    )
