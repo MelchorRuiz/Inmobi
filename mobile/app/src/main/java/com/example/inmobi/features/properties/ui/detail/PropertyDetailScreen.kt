@@ -34,8 +34,10 @@ import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.MeetingRoom
 import androidx.compose.material.icons.outlined.RealEstateAgent
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +47,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +57,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -72,6 +78,7 @@ fun PropertyDetailScreen(
     propertyId: Int,
     onBack: () -> Unit = {},
     onDelete: (Int) -> Unit = {},
+    onNavigateToJourney: (Int) -> Unit = {},
     viewModel: PropertyDetailViewModel = viewModel(),
     mainViewModel: MainViewModel = viewModel(
         factory = MainViewModel.Factory(NetworkModule.authRepository)
@@ -81,6 +88,8 @@ fun PropertyDetailScreen(
     val mainState by mainViewModel.state.collectAsStateWithLifecycle()
     val colorScheme = MaterialTheme.colorScheme
 
+    val isOwner = uiState.property?.let { mainState.user?.id?.toInt() == it.ownerUserId } ?: false
+
     LaunchedEffect(propertyId) {
         viewModel.loadProperty(propertyId)
     }
@@ -89,7 +98,6 @@ fun PropertyDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(colorScheme.background)
-            .verticalScroll(rememberScrollState())
     ) {
         Row(
             modifier = Modifier
@@ -108,6 +116,12 @@ fun PropertyDetailScreen(
             )
         }
 
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+        ) {
+
         when {
             uiState.isLoading -> LoadingState()
             uiState.error != null -> ErrorState(uiState.error!!) { viewModel.loadProperty(propertyId) }
@@ -115,7 +129,6 @@ fun PropertyDetailScreen(
                 val property = uiState.property!!
                 val images = property.images
                 val pagerState = rememberPagerState(pageCount = { images.size.coerceAtLeast(1) })
-                val isOwner = mainState.user?.id?.toInt() == property.ownerUserId
 
                 Box(
                     modifier = Modifier
@@ -378,14 +391,6 @@ fun PropertyDetailScreen(
                     }
 
                     if (!isOwner) {
-                        Button(
-                            onClick = { },
-                            modifier = Modifier.fillMaxWidth().height(44.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
-                        ) {
-                            Text("Me interesa esta propiedad", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
                         Spacer(Modifier.height(16.dp))
                     }
                 }
@@ -394,9 +399,153 @@ fun PropertyDetailScreen(
 
         Spacer(Modifier.height(24.dp))
     }
+
+        if (!isOwner && uiState.property != null) {
+            InterestFooter(
+                state = uiState.interestState,
+                error = uiState.interestError,
+                onRegister = { viewModel.registerInterest(propertyId) },
+                onViewProgress = { onNavigateToJourney(propertyId) },
+                onRemoveInterest = { viewModel.removeInterest(propertyId) }
+            )
+        }
+    }
 }
 
 private data class DetailSpec(val icon: ImageVector, val value: String, val label: String)
+
+@Composable
+private fun InterestFooter(
+    state: InterestState,
+    error: String?,
+    onRegister: () -> Unit,
+    onViewProgress: () -> Unit,
+    onRemoveInterest: () -> Unit
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = colorScheme.surface,
+        shadowElevation = 8.dp,
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 12.dp)
+        ) {
+            InterestButton(
+                state = state,
+                onRegister = onRegister,
+                onViewProgress = onViewProgress,
+                onRemoveInterest = { showConfirmDialog = true }
+            )
+            if (error != null) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    error,
+                    fontSize = 12.sp,
+                    color = colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+
+    if (showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+            title = { Text("¿Quitar interés?") },
+            text = { Text("Se perderá todo tu avance en esta propiedad. Esta acción no se puede deshacer.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showConfirmDialog = false
+                        onRemoveInterest()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFC62828),
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Sí, quitar")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showConfirmDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun InterestButton(
+    state: InterestState,
+    onRegister: () -> Unit,
+    onViewProgress: () -> Unit,
+    onRemoveInterest: () -> Unit
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    when (state) {
+        InterestState.NONE -> Button(
+            onClick = onRegister,
+            modifier = Modifier.fillMaxWidth().height(44.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
+        ) {
+            Text("Me interesa esta propiedad", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
+        InterestState.LOADING -> Button(
+            onClick = {},
+            enabled = false,
+            modifier = Modifier.fillMaxWidth().height(44.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal.copy(alpha = 0.5f))
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color.White,
+                strokeWidth = 2.dp
+            )
+        }
+        InterestState.REGISTERED -> Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = onViewProgress,
+                modifier = Modifier.weight(1f).height(44.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
+            ) {
+                Icon(Icons.Outlined.Check, "Check", modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Mi progreso", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+            OutlinedButton(
+                onClick = onRemoveInterest,
+                modifier = Modifier.weight(1f).height(44.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.error)
+            ) {
+                Text("Quitar", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+        InterestState.ERROR -> Button(
+            onClick = onRegister,
+            modifier = Modifier.fillMaxWidth().height(44.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.error, contentColor = Color.White)
+        ) {
+            Text("Reintentar", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
 
 private fun translatePropertyType(type: String): String {
     return when (type.lowercase()) {

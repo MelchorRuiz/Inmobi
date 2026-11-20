@@ -24,6 +24,7 @@ import com.example.inmobi.features.auth.ui.ProfileCompletionScreen
 import com.example.inmobi.features.auth.ui.RegisterScreen
 import com.example.inmobi.features.auth.ui.VerificationSentScreen
 import com.example.inmobi.features.home.ui.HomeScreen
+import com.example.inmobi.features.journey.ui.JourneyScreen
 import com.example.inmobi.features.main.ui.MainDashboardScreen
 import com.example.inmobi.features.messages.ui.MessagesScreen
 import com.example.inmobi.features.properties.ui.buy.BuyPropertyScreen
@@ -59,6 +60,7 @@ fun AppNavigation() {
     var currentScreen by remember { mutableStateOf("home") }
     var registeredEmail by remember { mutableStateOf("") }
     var selectedPropertyId by remember { mutableStateOf<Int?>(null) }
+    var journeyPropertyId by remember { mutableStateOf<Int?>(null) }
     var managePropertyId by remember { mutableStateOf<Int?>(null) }
     var manageOperationType by remember { mutableStateOf("sale") }
     var editPropertyId by remember { mutableStateOf<Int?>(null) }
@@ -73,13 +75,13 @@ fun AppNavigation() {
         }
     }
 
-    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario")
+    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey")
     val isAuthenticated = currentScreen in authenticatedScreens
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario") {
+            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey") {
                 AuthenticatedHeader(
                     onGoToMessages = { currentScreen = "mensajes" },
                     onGoToSettings = { currentScreen = "configuracion" }
@@ -87,7 +89,7 @@ fun AppNavigation() {
             }
         },
         bottomBar = {
-            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario") {
+            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey") {
                 FloatingIslandFooter(
                     currentScreen = currentScreen,
                     onTabSelected = { currentScreen = it }
@@ -175,7 +177,15 @@ fun AppNavigation() {
                 )
                 "detalle" -> PropertyDetailScreen(
                     propertyId = selectedPropertyId ?: 0,
-                    onBack = { currentScreen = previousScreen }
+                    onBack = { currentScreen = previousScreen },
+                    onNavigateToJourney = { propertyId ->
+                        journeyPropertyId = propertyId
+                        currentScreen = "journey"
+                    }
+                )
+                "journey" -> JourneyScreen(
+                    propertyId = journeyPropertyId ?: 0,
+                    onBack = { currentScreen = "detalle" }
                 )
                 "gestion" -> ManagePropertyScreen(
                     propertyId = managePropertyId ?: 0,
