@@ -30,6 +30,10 @@ class MainViewModel(
         loadProfile()
     }
 
+    fun clearUserState() {
+        _state.value = MainState()
+    }
+
     fun loadProfile() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
@@ -57,7 +61,7 @@ class MainViewModel(
 
             repository.logout()
                 .onSuccess {
-                    _state.update { it.copy(isLoggingOut = false) }
+                    clearUserState()
                     onSuccess()
                 }
                 .onFailure { throwable ->

@@ -25,7 +25,7 @@ class SellPropertiesViewModel : ViewModel() {
     val uiState: StateFlow<SellPropertiesUiState> = _uiState.asStateFlow()
 
     fun loadProperties() {
-        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        _uiState.value = SellPropertiesUiState(isLoading = true)
         viewModelScope.launch {
             when (val result = repository.myProperties(
                 operationType = OperationType.SALE.apiName

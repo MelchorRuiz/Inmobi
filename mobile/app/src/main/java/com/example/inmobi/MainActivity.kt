@@ -158,6 +158,7 @@ fun AppNavigation() {
                     }
                 )
                 "comprar" -> BuyPropertyScreen(
+                    refreshKey = listRefreshKey,
                     onPropertyClick = { id ->
                         selectedPropertyId = id
                         previousScreen = "comprar"
@@ -165,6 +166,7 @@ fun AppNavigation() {
                     }
                 )
                 "rentar" -> RentPropertyScreen(
+                    refreshKey = listRefreshKey,
                     onPropertyClick = { id ->
                         selectedPropertyId = id
                         previousScreen = "rentar"
@@ -288,7 +290,10 @@ fun AppNavigation() {
                 }
                 "mensajes" -> MessagesScreen()
                 "configuracion" -> SettingsScreen(
-                    onLogoutSuccess = { currentScreen = "login" }
+                    onLogoutSuccess = {
+                        listRefreshKey++
+                        currentScreen = "login"
+                    }
                 )
             }
         }

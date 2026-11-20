@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -54,6 +55,12 @@ fun SettingsScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
+
+    LaunchedEffect(state.user, state.isLoading, state.error) {
+        if (state.user == null && !state.isLoading && state.error == null) {
+            viewModel.loadProfile()
+        }
+    }
 
     Column(
         modifier = Modifier

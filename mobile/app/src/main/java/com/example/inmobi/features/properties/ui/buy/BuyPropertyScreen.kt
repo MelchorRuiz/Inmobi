@@ -39,12 +39,13 @@ import com.example.inmobi.features.properties.ui.common.PropertyCard
 @Composable
 fun BuyPropertyScreen(
     onPropertyClick: (Int) -> Unit = {},
+    refreshKey: Int = 0,
     viewModel: BuyPropertyViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colorScheme = MaterialTheme.colorScheme
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(refreshKey) {
         viewModel.loadProperties()
     }
 

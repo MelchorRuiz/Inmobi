@@ -25,7 +25,7 @@ class LeasePropertiesViewModel : ViewModel() {
     val uiState: StateFlow<LeasePropertiesUiState> = _uiState.asStateFlow()
 
     fun loadProperties() {
-        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        _uiState.value = LeasePropertiesUiState(isLoading = true)
         viewModelScope.launch {
             when (val result = repository.myProperties(
                 operationType = OperationType.RENT.apiName
