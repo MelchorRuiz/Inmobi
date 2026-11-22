@@ -21,7 +21,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bathtub
 import androidx.compose.material.icons.filled.Bed
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.SquareFoot
@@ -57,6 +58,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.inmobi.core.ui.theme.PrimaryTeal
+import com.example.inmobi.features.properties.domain.ListingStatus
 import com.example.inmobi.features.properties.ui.common.ErrorState
 import com.example.inmobi.features.properties.ui.common.LoadingState
 import com.example.inmobi.features.properties.ui.common.PriceEstimationBlock
@@ -71,7 +73,9 @@ fun ManagePropertyScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colorScheme = MaterialTheme.colorScheme
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showCancelDialog by remember { mutableStateOf(false) }
+    var showCloseDialog by remember { mutableStateOf(false) }
+    val isSale = uiState.property?.operationName == "sale"
 
     LaunchedEffect(propertyId) {
         viewModel.loadProperty(propertyId)
@@ -83,24 +87,47 @@ fun ManagePropertyScreen(
         }
     }
 
-    if (showDeleteDialog) {
+    if (showCancelDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar propiedad") },
-            text = { Text("¿Estas seguro de que deseas eliminar esta propiedad? Esta accion no se puede deshacer.") },
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text("Cancelar propiedad") },
+            text = { Text("Deseas cancelar esta propiedad? Dejara de ser visible para los demas usuarios.") },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.deleteProperty()
-                        showDeleteDialog = false
+                        viewModel.deleteProperty(ListingStatus.CANCELLED)
+                        showCancelDialog = false
                     }
                 ) {
-                    Text("Eliminar", color = Color.Red)
+                    Text("Si, cancelar", color = Color.Red)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                TextButton(onClick = { showCancelDialog = false }) {
+                    Text("No")
+                }
+            }
+        )
+    }
+
+    if (showCloseDialog) {
+        AlertDialog(
+            onDismissRequest = { showCloseDialog = false },
+            title = { Text(if (isSale) "Marcar como vendida" else "Marcar como rentada") },
+            text = { Text(if (isSale) "Deseas marcar esta propiedad como vendida? Ya no estara disponible." else "Deseas marcar esta propiedad como rentada? Ya no estara disponible.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteProperty(ListingStatus.CLOSED)
+                        showCloseDialog = false
+                    }
+                ) {
+                    Text("Si, confirmar", color = PrimaryTeal)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCloseDialog = false }) {
+                    Text("No")
                 }
             }
         )
@@ -286,14 +313,27 @@ fun ManagePropertyScreen(
                         Spacer(Modifier.height(12.dp))
 
                         OutlinedButton(
-                            onClick = { showDeleteDialog = true },
+                            onClick = { showCloseDialog = true },
+                            modifier = Modifier.fillMaxWidth().height(48.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryTeal)
+                        ) {
+                            Icon(Icons.Default.CheckCircle, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(if (isSale) "Ya vendida" else "Ya rentada", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                        }
+
+                        Spacer(Modifier.height(12.dp))
+
+                        OutlinedButton(
+                            onClick = { showCancelDialog = true },
                             modifier = Modifier.fillMaxWidth().height(48.dp),
                             shape = RoundedCornerShape(10.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
                         ) {
-                            Icon(Icons.Default.Delete, null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Cancel, null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Eliminar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            Text("Cancelar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(Modifier.height(32.dp))

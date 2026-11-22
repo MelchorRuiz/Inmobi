@@ -56,6 +56,7 @@ interface PropertiesApi {
 
     @DELETE("properties/{propertyId}")
     suspend fun deleteProperty(
-        @Path("propertyId") propertyId: Int
+        @Path("propertyId") propertyId: Int,
+        @Query("listing_status") listingStatus: String
     ): Response<Unit>
 }

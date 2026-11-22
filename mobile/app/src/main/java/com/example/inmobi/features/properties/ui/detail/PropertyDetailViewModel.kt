@@ -115,12 +115,12 @@ class PropertyDetailViewModel : ViewModel() {
         }
     }
 
-    fun deleteProperty(propertyId: Int, onDeleted: () -> Unit) {
+    fun deleteProperty(propertyId: Int, listingStatus: com.example.inmobi.features.properties.domain.ListingStatus, onDeleted: () -> Unit) {
         viewModelScope.launch {
-            when (repository.deleteProperty(propertyId)) {
+            when (repository.deleteProperty(propertyId, listingStatus.apiName)) {
                 is Result.Success -> onDeleted()
                 is Result.Error, is Result.NetworkError -> _uiState.value = _uiState.value.copy(
-                    error = "Error al eliminar propiedad"
+                    error = "Error al actualizar la propiedad"
                 )
             }
         }

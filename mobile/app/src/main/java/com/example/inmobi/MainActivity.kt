@@ -65,6 +65,7 @@ fun AppNavigation() {
     var calculatorPropertyId by remember { mutableStateOf<Int?>(null) }
     var managePropertyId by remember { mutableStateOf<Int?>(null) }
     var manageOperationType by remember { mutableStateOf("sale") }
+    var gestionPreviousScreen by remember { mutableStateOf("vender") }
     var editPropertyId by remember { mutableStateOf<Int?>(null) }
     var formOperationType by remember { mutableStateOf("sale") }
     var fromManage by remember { mutableStateOf(false) }
@@ -132,7 +133,19 @@ fun AppNavigation() {
                 "profile_completion" -> ProfileCompletionScreen(
                     onComplete = { currentScreen = "main" }
                 )
-                "main" -> MainDashboardScreen()
+                "main" -> MainDashboardScreen(
+                    onInterestedPropertyClick = { id ->
+                        selectedPropertyId = id
+                        previousScreen = "main"
+                        currentScreen = "detalle"
+                    },
+                    onPublishedPropertyClick = { id ->
+                        managePropertyId = id
+                        manageOperationType = "sale"
+                        gestionPreviousScreen = "main"
+                        currentScreen = "gestion"
+                    }
+                )
                 "vender" -> SellPropertiesScreen(
                     refreshKey = listRefreshKey,
                     onCreateProperty = {
@@ -144,6 +157,7 @@ fun AppNavigation() {
                     onPropertyClick = { id ->
                         managePropertyId = id
                         manageOperationType = "sale"
+                        gestionPreviousScreen = "vender"
                         currentScreen = "gestion"
                     }
                 )
@@ -158,6 +172,7 @@ fun AppNavigation() {
                     onPropertyClick = { id ->
                         managePropertyId = id
                         manageOperationType = "rent"
+                        gestionPreviousScreen = "arrendar"
                         currentScreen = "gestion"
                     }
                 )
@@ -201,10 +216,7 @@ fun AppNavigation() {
                     propertyId = managePropertyId ?: 0,
                     onBack = {
                         listRefreshKey++
-                        currentScreen = when (manageOperationType) {
-                            "sale" -> "vender"
-                            else -> "arrendar"
-                        }
+                        currentScreen = gestionPreviousScreen
                     },
                     onEdit = { id ->
                         editPropertyId = id

@@ -44,13 +44,13 @@ class ManagePropertyViewModel : ViewModel() {
         }
     }
 
-    fun deleteProperty() {
+    fun deleteProperty(listingStatus: com.example.inmobi.features.properties.domain.ListingStatus) {
         val propertyId = _uiState.value.property?.id ?: return
         viewModelScope.launch {
-            when (repository.deleteProperty(propertyId)) {
+            when (repository.deleteProperty(propertyId, listingStatus.apiName)) {
                 is Result.Success -> _uiState.value = _uiState.value.copy(deleted = true)
                 is Result.Error -> _uiState.value = _uiState.value.copy(
-                    error = "Error al eliminar propiedad"
+                    error = "Error al actualizar la propiedad"
                 )
                 is Result.NetworkError -> _uiState.value = _uiState.value.copy(
                     error = "Error de conexión"

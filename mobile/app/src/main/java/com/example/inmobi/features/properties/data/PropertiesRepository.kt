@@ -74,8 +74,8 @@ class PropertiesRepository {
         return safeApiCall { api.updateProperty(propertyId, request) }
     }
 
-    suspend fun deleteProperty(propertyId: Int): Result<Unit> {
-        return safeApiCall { api.deleteProperty(propertyId) }
+    suspend fun deleteProperty(propertyId: Int, listingStatus: String): Result<Unit> {
+        return safeApiCall { api.deleteProperty(propertyId, listingStatus) }
     }
 
     suspend fun uploadImage(file: File): Result<String> {
