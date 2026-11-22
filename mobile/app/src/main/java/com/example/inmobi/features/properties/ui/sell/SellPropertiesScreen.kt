@@ -28,6 +28,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,13 +41,14 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.inmobi.core.ui.theme.PrimaryTeal
-import com.example.inmobi.features.properties.domain.ListingStatus
 import com.example.inmobi.features.properties.domain.Property
 import com.example.inmobi.features.properties.ui.common.EmptyState
 import com.example.inmobi.features.properties.ui.common.ErrorState
 import com.example.inmobi.features.properties.ui.common.LoadingState
 import com.example.inmobi.features.properties.ui.common.ManagePropertyCard
 import com.example.inmobi.features.properties.ui.common.MetricCard
+import com.example.inmobi.features.properties.ui.common.StatusFilter
+import com.example.inmobi.features.properties.ui.common.StatusFilterChipRow
 import com.example.inmobi.features.properties.ui.common.deviationLabel
 
 @Composable
@@ -56,13 +60,22 @@ fun SellPropertiesScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val colorScheme = MaterialTheme.colorScheme
+    var selectedFilter by remember { mutableStateOf(StatusFilter.ALL) }
 
-    LaunchedEffect(refreshKey) {
-        viewModel.loadProperties()
+    val filterLabels = remember {
+        mapOf(
+            StatusFilter.ALL to "Todas",
+            StatusFilter.ACTIVE to "Activas",
+            StatusFilter.CANCELLED to "Pausadas",
+            StatusFilter.CLOSED to "Vendidas"
+        )
     }
 
-    val activeProperties = uiState.properties.filter { it.listingStatus == ListingStatus.ACTIVE.apiName }
-    val totalValue = activeProperties.sumOf { it.price }
+    LaunchedEffect(refreshKey, selectedFilter) {
+        viewModel.loadProperties(selectedFilter)
+    }
+
+    val totalValue = uiState.properties.sumOf { it.price }
 
     Column(
         modifier = Modifier
@@ -104,17 +117,31 @@ fun SellPropertiesScreen(
         Spacer(Modifier.height(18.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MetricCard(Modifier.width(110.dp), Icons.Outlined.Sell, "${activeProperties.size}", "En venta activas")
-            MetricCard(Modifier.width(110.dp), Icons.Outlined.Visibility, "${uiState.properties.size}", "Total publicadas")
-            MetricCard(Modifier.width(110.dp), Icons.Outlined.AccountBalanceWallet, formatCurrency(totalValue), "Valor total publicado")
+            when (selectedFilter) {
+                StatusFilter.ALL -> {
+                    MetricCard(Modifier.width(110.dp), Icons.Outlined.Sell, "${uiState.properties.size}", "Publicadas")
+                    MetricCard(Modifier.width(110.dp), Icons.Outlined.Visibility, "${uiState.properties.size}", "Total")
+                    MetricCard(Modifier.width(110.dp), Icons.Outlined.AccountBalanceWallet, formatCurrency(totalValue), "Valor total")
+                }
+                else -> {
+                    MetricCard(Modifier.width(110.dp), Icons.Outlined.Sell, "${uiState.properties.size}", filterLabels[selectedFilter] ?: "")
+                    MetricCard(Modifier.width(110.dp), Icons.Outlined.AccountBalanceWallet, formatCurrency(totalValue), "Valor total")
+                }
+            }
         }
 
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
+        StatusFilterChipRow(
+            selected = selectedFilter,
+            labels = filterLabels,
+            onFilterChange = { selectedFilter = it }
+        )
+        Spacer(Modifier.height(12.dp))
 
         when {
             uiState.isLoading -> LoadingState()
-            uiState.error != null -> ErrorState(uiState.error!!) { viewModel.loadProperties() }
-            uiState.properties.isEmpty() -> EmptyState("No tienes propiedades en venta")
+            uiState.error != null -> ErrorState(uiState.error!!) { viewModel.loadProperties(selectedFilter) }
+            uiState.properties.isEmpty() -> EmptyState(emptyMessage(selectedFilter))
             else -> {
                 uiState.properties.forEach { property ->
                     val (statusText, statusColor, statusBgColor, statText, actionText) = getStatusInfo(property)
@@ -157,10 +184,10 @@ private fun getStatusInfo(property: Property): StatusInfo {
             statusColor = Color(0xFFD97706),
             statusBgColor = Color(0xFFFEF3C7),
             statText = "Cancelada",
-            actionText = "Reactivar"
+            actionText = "Ver"
         )
         "closed" -> StatusInfo(
-            statusText = "Cerrada",
+            statusText = "Vendida",
             statusColor = Color(0xFF64748B),
             statusBgColor = Color(0xFFF1F5F9),
             statText = "Venta cerrada",
@@ -183,6 +210,13 @@ private data class StatusInfo(
     val statText: String,
     val actionText: String
 )
+
+private fun emptyMessage(filter: StatusFilter): String = when (filter) {
+    StatusFilter.ALL -> "No tienes propiedades en venta"
+    StatusFilter.ACTIVE -> "No tienes propiedades activas"
+    StatusFilter.CANCELLED -> "No tienes propiedades pausadas"
+    StatusFilter.CLOSED -> "No tienes propiedades vendidas"
+}
 
 private fun formatCurrency(value: Double): String {
     return when {

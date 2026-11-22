@@ -54,6 +54,11 @@ interface PropertiesApi {
         @Body request: PropertyUpdateRequest
     ): Response<PropertyDto>
 
+    @POST("properties/{propertyId}/reactivate")
+    suspend fun reactivateProperty(
+        @Path("propertyId") propertyId: Int
+    ): Response<PropertyDto>
+
     @DELETE("properties/{propertyId}")
     suspend fun deleteProperty(
         @Path("propertyId") propertyId: Int,

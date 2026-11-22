@@ -140,9 +140,7 @@ def my_properties(
         query = query.filter(OperationType.operation_name == operation_type)
     if property_type is not None:
         query = query.filter(Property.property_type == property_type)
-    if listing_status is None:
-        query = query.filter(Property.listing_status == ListingStatus.ACTIVE.value)
-    else:
+    if listing_status is not None:
         query = query.filter(Property.listing_status == listing_status)
     if city is not None:
         query = query.filter(Property.city.ilike(f"%{city}%"))
@@ -270,6 +268,61 @@ def delete_property(
         )
     db_property.listing_status = listing_status.value
     db.commit()
+
+
+@router.post("/{property_id}/reactivate", response_model=PropertyResponse)
+def reactivate_property(
+    property_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles(Role.ADMINISTRATOR, Role.USER)),
+):
+    db_property = db.query(Property).filter(Property.property_id == property_id).first()
+    if not db_property:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Property not found")
+
+    is_owner = db_property.owner_user_id == current_user.id
+    is_admin = current_user.role == Role.ADMINISTRATOR
+    if not (is_owner or is_admin):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You cannot reactivate this property",
+        )
+
+    if db_property.listing_status not in (
+        ListingStatus.CANCELLED.value,
+        ListingStatus.CLOSED.value,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only cancelled or closed properties can be reactivated",
+        )
+
+    db_property.listing_status = ListingStatus.ACTIVE.value
+
+    estimation = predict_price(db_property)
+    if estimation:
+        if db_property.price_estimation:
+            db_property.price_estimation.estimated_price = estimation["estimated_price"]
+            db_property.price_estimation.min_price = estimation["min_price"]
+            db_property.price_estimation.max_price = estimation["max_price"]
+            db_property.price_estimation.confidence_score = estimation["confidence_score"]
+            db_property.price_estimation.model_version = estimation["model_version"]
+            db_property.price_estimation.operation_type = estimation["operation_type"]
+        else:
+            db_estimation = PropertyPriceEstimation(
+                property_id=db_property.property_id,
+                estimated_price=estimation["estimated_price"],
+                min_price=estimation["min_price"],
+                max_price=estimation["max_price"],
+                confidence_score=estimation["confidence_score"],
+                model_version=estimation["model_version"],
+                operation_type=estimation["operation_type"],
+            )
+            db.add(db_estimation)
+
+    db.commit()
+    db.refresh(db_property)
+    return _to_response(db_property)
 
 
 def _to_response(prop: Property) -> PropertyResponse:

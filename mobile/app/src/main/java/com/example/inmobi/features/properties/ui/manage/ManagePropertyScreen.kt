@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.LocationOn
@@ -81,9 +82,11 @@ fun ManagePropertyScreen(
         viewModel.loadProperty(propertyId)
     }
 
-    LaunchedEffect(uiState.deleted) {
-        if (uiState.deleted) {
-            onBack()
+    LaunchedEffect(Unit) {
+        viewModel.navigationEvents.collect { event ->
+            when (event) {
+                is ManagePropertyEvent.NavigateBack -> onBack()
+            }
         }
     }
 
@@ -299,41 +302,54 @@ fun ManagePropertyScreen(
                             Spacer(Modifier.height(24.dp))
                         }
 
-                        Button(
-                            onClick = { onEdit(property.id) },
-                            modifier = Modifier.fillMaxWidth().height(48.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
-                        ) {
-                            Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Editar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        }
+                        if (property.listingStatus == "active") {
+                            Button(
+                                onClick = { onEdit(property.id) },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
+                            ) {
+                                Icon(Icons.Default.Edit, null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text("Editar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
 
-                        Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(12.dp))
 
-                        OutlinedButton(
-                            onClick = { showCloseDialog = true },
-                            modifier = Modifier.fillMaxWidth().height(48.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryTeal)
-                        ) {
-                            Icon(Icons.Default.CheckCircle, null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text(if (isSale) "Ya vendida" else "Ya rentada", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                        }
+                            OutlinedButton(
+                                onClick = { showCloseDialog = true },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryTeal)
+                            ) {
+                                Icon(Icons.Default.CheckCircle, null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text(if (isSale) "Ya vendida" else "Ya rentada", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
 
-                        Spacer(Modifier.height(12.dp))
+                            Spacer(Modifier.height(12.dp))
 
-                        OutlinedButton(
-                            onClick = { showCancelDialog = true },
-                            modifier = Modifier.fillMaxWidth().height(48.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
-                        ) {
-                            Icon(Icons.Default.Cancel, null, modifier = Modifier.size(18.dp))
-                            Spacer(Modifier.width(8.dp))
-                            Text("Cancelar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            OutlinedButton(
+                                onClick = { showCancelDialog = true },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                            ) {
+                                Icon(Icons.Default.Cancel, null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text("Cancelar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
+                        } else {
+                            Button(
+                                onClick = { viewModel.reactivateProperty() },
+                                modifier = Modifier.fillMaxWidth().height(48.dp),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal, contentColor = Color.White)
+                            ) {
+                                Icon(Icons.Default.Refresh, null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(8.dp))
+                                Text("Reactivar propiedad", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
 
                         Spacer(Modifier.height(32.dp))

@@ -74,6 +74,10 @@ class PropertiesRepository {
         return safeApiCall { api.updateProperty(propertyId, request) }
     }
 
+    suspend fun reactivateProperty(propertyId: Int): Result<PropertyDto> {
+        return safeApiCall { api.reactivateProperty(propertyId) }
+    }
+
     suspend fun deleteProperty(propertyId: Int, listingStatus: String): Result<Unit> {
         return safeApiCall { api.deleteProperty(propertyId, listingStatus) }
     }
