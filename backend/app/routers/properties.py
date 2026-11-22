@@ -94,7 +94,7 @@ def list_properties(
     limit: int = Query(20, ge=1, le=100),
     operation_type: Optional[str] = None,
     property_type: Optional[PropertyType] = None,
-    listing_status: Optional[ListingStatus] = None,
+    listing_status: Optional[ListingStatus] = Query(None),
     city: Optional[str] = None,
     min_price: Optional[Decimal] = None,
     max_price: Optional[Decimal] = None,
@@ -106,7 +106,9 @@ def list_properties(
         query = query.filter(OperationType.operation_name == operation_type)
     if property_type is not None:
         query = query.filter(Property.property_type == property_type)
-    if listing_status is not None:
+    if listing_status is None:
+        query = query.filter(Property.listing_status == ListingStatus.ACTIVE.value)
+    else:
         query = query.filter(Property.listing_status == listing_status)
     if city is not None:
         query = query.filter(Property.city.ilike(f"%{city}%"))
@@ -125,7 +127,7 @@ def my_properties(
     limit: int = Query(20, ge=1, le=100),
     operation_type: Optional[str] = None,
     property_type: Optional[PropertyType] = None,
-    listing_status: Optional[ListingStatus] = None,
+    listing_status: Optional[ListingStatus] = Query(None),
     city: Optional[str] = None,
     min_price: Optional[Decimal] = None,
     max_price: Optional[Decimal] = None,
@@ -138,7 +140,9 @@ def my_properties(
         query = query.filter(OperationType.operation_name == operation_type)
     if property_type is not None:
         query = query.filter(Property.property_type == property_type)
-    if listing_status is not None:
+    if listing_status is None:
+        query = query.filter(Property.listing_status == ListingStatus.ACTIVE.value)
+    else:
         query = query.filter(Property.listing_status == listing_status)
     if city is not None:
         query = query.filter(Property.city.ilike(f"%{city}%"))
@@ -241,6 +245,7 @@ def update_property(
 @router.delete("/{property_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_property(
     property_id: int,
+    listing_status: ListingStatus = Query(ListingStatus.CANCELLED),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles(Role.ADMINISTRATOR, Role.USER)),
 ):
@@ -253,7 +258,17 @@ def delete_property(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You cannot delete this property"
         )
-    db.delete(db_property)
+    if is_admin and listing_status != ListingStatus.CANCELLED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrators can only cancel properties",
+        )
+    if listing_status not in (ListingStatus.CANCELLED, ListingStatus.CLOSED):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Listing status must be 'cancelled' or 'closed'",
+        )
+    db_property.listing_status = listing_status.value
     db.commit()
 
 
