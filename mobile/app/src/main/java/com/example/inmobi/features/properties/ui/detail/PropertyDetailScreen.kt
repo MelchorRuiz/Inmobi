@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bathtub
 import androidx.compose.material.icons.filled.Bed
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.outlined.ArrowBack
@@ -79,6 +80,7 @@ fun PropertyDetailScreen(
     onBack: () -> Unit = {},
     onDelete: (Int) -> Unit = {},
     onNavigateToJourney: (Int) -> Unit = {},
+    onNavigateToCalculator: () -> Unit = {},
     viewModel: PropertyDetailViewModel = viewModel(),
     mainViewModel: MainViewModel = viewModel(
         factory = MainViewModel.Factory(NetworkModule.authRepository)
@@ -211,6 +213,23 @@ fun PropertyDetailScreen(
                         fontWeight = FontWeight.ExtraBold,
                         color = PrimaryTeal
                     )
+
+                    if (!isOwner) {
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = onNavigateToCalculator,
+                            modifier = Modifier.fillMaxWidth().height(44.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PrimaryTeal.copy(alpha = 0.1f),
+                                contentColor = PrimaryTeal
+                            )
+                        ) {
+                            Icon(Icons.Filled.Calculate, null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Calcular costo real", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
 
                     Spacer(Modifier.height(16.dp))
 
