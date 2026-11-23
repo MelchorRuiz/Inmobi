@@ -94,7 +94,6 @@ fun MainDashboardScreen(
                     if (hasInterested) {
                         DashboardSection(
                             title = "Propiedades que te interesan",
-                            subtitle = "${uiState.interestedProperties.size} propiedades",
                             icon = Icons.Outlined.Favorite,
                             properties = uiState.interestedProperties,
                             cardConfig = { property ->
@@ -105,11 +104,12 @@ fun MainDashboardScreen(
                     }
 
                     if (hasPublished) {
-                        Spacer(modifier = Modifier.height(24.dp))
+                        if (hasInterested) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
 
                         DashboardSection(
                             title = "Tus propiedades publicadas",
-                            subtitle = "${uiState.publishedProperties.size} propiedades",
                             icon = Icons.Outlined.HomeWork,
                             properties = uiState.publishedProperties,
                             cardConfig = { property ->
@@ -177,7 +177,6 @@ private fun EmptyDashboardMessage() {
 @Composable
 private fun DashboardSection(
     title: String,
-    subtitle: String,
     icon: ImageVector,
     properties: List<Property>,
     cardConfig: (Property) -> PropertyCardConfig,
@@ -197,12 +196,6 @@ private fun DashboardSection(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = subtitle,
-                fontSize = 12.sp,
-                color = colorScheme.onSurfaceVariant
             )
         }
 
