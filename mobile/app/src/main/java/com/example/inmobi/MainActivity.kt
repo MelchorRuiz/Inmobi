@@ -7,6 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Gavel
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,14 +23,19 @@ import com.example.inmobi.core.network.InAppNotification
 import com.example.inmobi.core.network.TokenManager
 import com.example.inmobi.core.ui.components.AuthenticatedHeader
 import com.example.inmobi.core.ui.components.FloatingIslandFooter
+import com.example.inmobi.core.ui.components.FloatingTabItem
 import com.example.inmobi.core.ui.components.InAppNotificationBanner
+import com.example.inmobi.core.ui.components.defaultUserTabs
 import com.example.inmobi.core.ui.theme.InmobiTheme
+import com.example.inmobi.features.admin.ui.AdminDashboardScreen
+import com.example.inmobi.features.admin.ui.LegalStaffManagementScreen
 import com.example.inmobi.features.auth.ui.LoginScreen
 import com.example.inmobi.features.auth.ui.ProfileCompletionScreen
 import com.example.inmobi.features.auth.ui.RegisterScreen
 import com.example.inmobi.features.auth.ui.VerificationSentScreen
 import com.example.inmobi.features.home.ui.HomeScreen
 import com.example.inmobi.features.journey.ui.JourneyScreen
+import com.example.inmobi.features.legal.ui.LegalWelcomeScreen
 import com.example.inmobi.features.main.ui.MainDashboardScreen
 import com.example.inmobi.features.messages.ui.ChatDetailScreen
 import com.example.inmobi.features.messages.ui.MessagesScreen
@@ -86,14 +94,34 @@ fun AppNavigation() {
     var chatPreviousScreen by remember { mutableStateOf("mensajes") }
     var currentNotification by remember { mutableStateOf<InAppNotification?>(null) }
 
+    fun homeForRole(role: String): String {
+        return when (role) {
+            "administrator" -> "admin_home"
+            "legal_staff" -> "legal_welcome"
+            else -> "main"
+        }
+    }
+
+    val adminTabs: List<FloatingTabItem> = remember {
+        listOf(
+            FloatingTabItem("admin_home", "Inicio", Icons.Default.Home),
+            FloatingTabItem("admin_legal_staff", "Personal Legal", Icons.Default.Gavel)
+        )
+    }
+
+    val legalStaffTabs: List<FloatingTabItem> = remember {
+        listOf(FloatingTabItem("legal_welcome", "Inicio", Icons.Default.Home))
+    }
+
     LaunchedEffect(Unit) {
         if (TokenManager.hasToken()) {
-            currentScreen = "main"
+            val role = TokenManager.getRole() ?: "user"
+            currentScreen = homeForRole(role)
         }
     }
 
     LaunchedEffect(currentScreen) {
-        val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle")
+        val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle", "admin_home", "admin_legal_staff", "legal_welcome")
         if (currentScreen in authenticatedScreens && TokenManager.hasToken()) {
             ChatWebSocket.connect()
         } else {
@@ -107,25 +135,36 @@ fun AppNavigation() {
         }
     }
 
-    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle")
+    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle", "admin_home", "admin_legal_staff", "legal_welcome")
     val isAuthenticated = currentScreen in authenticatedScreens
+    val currentRole = TokenManager.getRole() ?: "user"
+    val hideFooterScreens = setOf("detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle")
+    val showFooter = isAuthenticated && currentScreen !in hideFooterScreens
+
+    val footerTabs = when (currentRole) {
+        "administrator" -> adminTabs
+        "legal_staff" -> legalStaffTabs
+        else -> defaultUserTabs
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
-                if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey" && currentScreen != "calculadora" && currentScreen != "chat_detalle") {
+                if (isAuthenticated && currentScreen !in hideFooterScreens) {
                     AuthenticatedHeader(
                         onGoToMessages = { currentScreen = "mensajes" },
-                        onGoToSettings = { currentScreen = "configuracion" }
+                        onGoToSettings = { currentScreen = "configuracion" },
+                        showMessages = currentRole == "user"
                     )
                 }
             },
             bottomBar = {
-                if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey" && currentScreen != "calculadora" && currentScreen != "chat_detalle") {
+                if (showFooter) {
                     FloatingIslandFooter(
                         currentScreen = currentScreen,
-                        onTabSelected = { currentScreen = it }
+                        onTabSelected = { currentScreen = it },
+                        tabs = footerTabs
                     )
                 }
             }
@@ -143,7 +182,7 @@ fun AppNavigation() {
                         registeredEmail = email
                         currentScreen = "verification_sent"
                     },
-                    onLoginSuccess = { currentScreen = "main" },
+                    onLoginSuccess = { role -> currentScreen = homeForRole(role) },
                     onProfileIncomplete = { currentScreen = "profile_completion" }
                 )
                 "register" -> RegisterScreen(
@@ -176,6 +215,9 @@ fun AppNavigation() {
                         currentScreen = "gestion"
                     }
                 )
+                "admin_home" -> AdminDashboardScreen()
+                "admin_legal_staff" -> LegalStaffManagementScreen()
+                "legal_welcome" -> LegalWelcomeScreen()
                 "vender" -> SellPropertiesScreen(
                     refreshKey = listRefreshKey,
                     onCreateProperty = {

@@ -81,7 +81,7 @@ fun LoginScreen(
     onBackToHome: () -> Unit = {},
     onGoToRegister: () -> Unit = {},
     onGoToVerifyEmail: (String) -> Unit = {},
-    onLoginSuccess: () -> Unit = {},
+    onLoginSuccess: (role: String) -> Unit = {},
     onProfileIncomplete: () -> Unit = {}
 ) {
     val context = LocalContext.current

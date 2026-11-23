@@ -46,7 +46,7 @@ class LoginViewModel(
         _formState.update { it.copy(password = value, passwordError = validatePassword(value), serverError = null) }
     }
 
-    fun login(onSuccess: () -> Unit) {
+    fun login(onSuccess: (role: String) -> Unit) {
         val state = _formState.value
         val emailError = validateEmail(state.email)
         val passwordError = validatePassword(state.password)
@@ -65,9 +65,9 @@ class LoginViewModel(
             _formState.update { it.copy(isLoading = true, serverError = null) }
 
             repository.login(state.email, state.password)
-                .onSuccess {
+                .onSuccess { session ->
                     resetForm()
-                    onSuccess()
+                    onSuccess(session.role)
                 }
                 .onFailure { throwable ->
                     val errorState = when (throwable) {
@@ -96,7 +96,7 @@ class LoginViewModel(
         }
     }
 
-    fun googleSignIn(context: Context, onSuccess: () -> Unit, onProfileIncomplete: () -> Unit) {
+    fun googleSignIn(context: Context, onSuccess: (role: String) -> Unit, onProfileIncomplete: () -> Unit) {
         viewModelScope.launch {
             _formState.update { it.copy(isGoogleLoading = true, googleError = null) }
 
@@ -107,7 +107,7 @@ class LoginViewModel(
                 .onSuccess { session ->
                     resetForm()
                     if (session.isProfileComplete) {
-                        onSuccess()
+                        onSuccess(session.role)
                     } else {
                         onProfileIncomplete()
                     }

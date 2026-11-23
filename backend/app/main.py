@@ -6,9 +6,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
-from app.seed import seed_amenities, seed_catalog_steps, seed_operation_types
+from app.seed import seed_admin, seed_amenities, seed_catalog_steps, seed_operation_types
 from app.database import SessionLocal
-from app.routers import amenities, auth, chats, dashboard, end_users, files, health, journey, properties
+from app.routers import (
+    amenities,
+    auth,
+    chats,
+    dashboard,
+    end_users,
+    files,
+    health,
+    journey,
+    legal_staff,
+    properties,
+)
 
 
 FILES_DIR = Path(__file__).resolve().parent.parent / "files"
@@ -21,6 +32,7 @@ async def lifespan(app: FastAPI):
         seed_operation_types(db)
         seed_amenities(db)
         seed_catalog_steps(db)
+        seed_admin(db)
     finally:
         db.close()
     yield
@@ -43,6 +55,7 @@ app.include_router(amenities.router)
 app.include_router(journey.router)
 app.include_router(dashboard.router)
 app.include_router(chats.router)
+app.include_router(legal_staff.router)
 app.include_router(files.router)
 app.include_router(health.router)
 

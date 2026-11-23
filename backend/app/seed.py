@@ -1,8 +1,11 @@
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models.amenity import Amenity
 from app.models.catalog_step import CatalogStep
 from app.models.operation_type import OperationType
+from app.models.user import Role, User
+from app.security import hash_password
 
 
 def seed_operation_types(db: Session):
@@ -215,4 +218,32 @@ def seed_catalog_steps(db: Session):
                 )
             )
 
+    db.commit()
+
+
+def seed_admin(db: Session) -> None:
+    email = settings.ADMIN_EMAIL.strip().lower()
+    password = settings.ADMIN_PASSWORD
+
+    if not email or not password:
+        return
+
+    existing = db.query(User).filter(User.email == email).first()
+
+    if existing:
+        existing.password_hash = hash_password(password)
+        existing.role = Role.ADMINISTRATOR
+        existing.email_verified = True
+        db.commit()
+        return
+
+    db.add(
+        User(
+            email=email,
+            password_hash=hash_password(password),
+            role=Role.ADMINISTRATOR,
+            email_verified=True,
+            is_active=True,
+        )
+    )
     db.commit()

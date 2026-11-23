@@ -31,6 +31,7 @@ class AuthRepository(private val authApi: AuthApi) {
                 val sessionResponse = response.body()
                 if (sessionResponse != null) {
                     TokenManager.saveTokens(sessionResponse.accessToken, sessionResponse.refreshToken)
+                    TokenManager.saveRole(sessionResponse.role)
                     Result.success(sessionResponse)
                 } else {
                     Result.failure(Exception("Empty response body"))
@@ -61,6 +62,7 @@ class AuthRepository(private val authApi: AuthApi) {
                 val sessionResponse = response.body()
                 if (sessionResponse != null) {
                     TokenManager.saveTokens(sessionResponse.accessToken, sessionResponse.refreshToken)
+                    TokenManager.saveRole(sessionResponse.role)
                     Result.success(sessionResponse)
                 } else {
                     Result.failure(Exception("Empty response body"))
@@ -164,6 +166,7 @@ class AuthRepository(private val authApi: AuthApi) {
                 val sessionResponse = response.body()
                 if (sessionResponse != null) {
                     TokenManager.saveTokens(sessionResponse.accessToken, sessionResponse.refreshToken)
+                    TokenManager.saveRole(sessionResponse.role)
                     Result.success(sessionResponse)
                 } else {
                     Result.failure(Exception("Empty response body"))

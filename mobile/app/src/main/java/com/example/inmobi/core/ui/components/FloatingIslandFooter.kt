@@ -43,7 +43,7 @@ data class FloatingTabItem(
     val icon: ImageVector
 )
 
-private val tabs = listOf(
+val defaultUserTabs = listOf(
     FloatingTabItem("main", "Inicio", Icons.Default.Home),
     FloatingTabItem("rentar", "Rentar", Icons.Default.Key),
     FloatingTabItem("comprar", "Comprar", Icons.Default.ShoppingBag),
@@ -54,7 +54,8 @@ private val tabs = listOf(
 @Composable
 fun FloatingIslandFooter(
     currentScreen: String,
-    onTabSelected: (String) -> Unit
+    onTabSelected: (String) -> Unit,
+    tabs: List<FloatingTabItem> = defaultUserTabs
 ) {
     val colorScheme = MaterialTheme.colorScheme
 

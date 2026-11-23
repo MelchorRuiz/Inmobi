@@ -37,6 +37,12 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     end_user = relationship("EndUser", back_populates="user", uselist=False)
+    legal_staff = relationship(
+        "LegalStaff",
+        back_populates="user",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     @property
     def is_profile_complete(self) -> bool:

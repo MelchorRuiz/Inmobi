@@ -9,6 +9,7 @@ object TokenManager {
     private const val PREFS_NAME = "inmobi_secure_prefs"
     private const val KEY_ACCESS_TOKEN = "access_token"
     private const val KEY_REFRESH_TOKEN = "refresh_token"
+    private const val KEY_ROLE = "role"
 
     private lateinit var prefs: SharedPreferences
 
@@ -41,6 +42,14 @@ object TokenManager {
                 putString(KEY_REFRESH_TOKEN, refreshToken)
             }
         }.apply()
+    }
+
+    fun saveRole(role: String) {
+        prefs.edit().putString(KEY_ROLE, role).apply()
+    }
+
+    fun getRole(): String? {
+        return prefs.getString(KEY_ROLE, null)
     }
 
     fun clearTokens() {

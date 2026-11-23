@@ -32,7 +32,8 @@ import com.example.inmobi.R
 @Composable
 fun AuthenticatedHeader(
     onGoToMessages: () -> Unit = {},
-    onGoToSettings: () -> Unit = {}
+    onGoToSettings: () -> Unit = {},
+    showMessages: Boolean = true
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
@@ -71,12 +72,14 @@ fun AuthenticatedHeader(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onGoToMessages) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.Chat,
-                    contentDescription = "Messages",
-                    tint = colorScheme.onSurfaceVariant
-                )
+            if (showMessages) {
+                IconButton(onClick = onGoToMessages) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                        contentDescription = "Messages",
+                        tint = colorScheme.onSurfaceVariant
+                    )
+                }
             }
             IconButton(onClick = onGoToSettings) {
                 Icon(

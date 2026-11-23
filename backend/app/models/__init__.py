@@ -2,6 +2,7 @@ from app.models.amenity import Amenity
 from app.models.catalog_step import CatalogStep
 from app.models.chat import Chat
 from app.models.end_user import EndUser, Preference
+from app.models.legal_staff import LegalStaff
 from app.models.message import Message
 from app.models.operation_type import OperationType
 from app.models.property import ListingStatus, Property, PropertyType

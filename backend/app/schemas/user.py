@@ -6,6 +6,7 @@ from app.models.end_user import Preference
 from app.models.refresh_token import ClientType
 from app.models.user import Role
 from app.schemas.end_user import EndUserCreate, EndUserResponse, PhoneNumber
+from app.schemas.legal_staff import LegalStaffResponse
 
 MINIMUM_AGE = 18
 
@@ -63,6 +64,7 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: datetime
     end_user: EndUserResponse | None = None
+    legal_staff: LegalStaffResponse | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

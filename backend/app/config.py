@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     EMAIL_FROM_ADDRESS: str = "onboarding@resend.dev"
     API_BASE_URL: str = "http://localhost:8000"
     EMAIL_VERIFICATION_TOKEN_EXPIRE_HOURS: int = 24
+    ADMIN_EMAIL: str = ""
+    ADMIN_PASSWORD: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
