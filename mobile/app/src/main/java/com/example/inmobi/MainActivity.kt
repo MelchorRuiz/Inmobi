@@ -15,9 +15,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.inmobi.core.network.ChatWebSocket
+import com.example.inmobi.core.network.InAppNotification
 import com.example.inmobi.core.network.TokenManager
 import com.example.inmobi.core.ui.components.AuthenticatedHeader
 import com.example.inmobi.core.ui.components.FloatingIslandFooter
+import com.example.inmobi.core.ui.components.InAppNotificationBanner
 import com.example.inmobi.core.ui.theme.InmobiTheme
 import com.example.inmobi.features.auth.ui.LoginScreen
 import com.example.inmobi.features.auth.ui.ProfileCompletionScreen
@@ -26,6 +29,7 @@ import com.example.inmobi.features.auth.ui.VerificationSentScreen
 import com.example.inmobi.features.home.ui.HomeScreen
 import com.example.inmobi.features.journey.ui.JourneyScreen
 import com.example.inmobi.features.main.ui.MainDashboardScreen
+import com.example.inmobi.features.messages.ui.ChatDetailScreen
 import com.example.inmobi.features.messages.ui.MessagesScreen
 import com.example.inmobi.features.properties.ui.buy.BuyPropertyScreen
 import com.example.inmobi.features.properties.ui.calculator.PropertyCalculatorScreen
@@ -47,12 +51,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         TokenManager.init(this)
+        ChatWebSocket.initialize(this)
 
         setContent {
             InmobiTheme {
                 AppNavigation()
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        ChatWebSocket.disconnect()
     }
 }
 
@@ -71,6 +81,10 @@ fun AppNavigation() {
     var fromManage by remember { mutableStateOf(false) }
     var previousScreen by remember { mutableStateOf("main") }
     var listRefreshKey by remember { mutableStateOf(0) }
+    var selectedChatId by remember { mutableStateOf<Int?>(null) }
+    var selectedChatPropertyId by remember { mutableStateOf<Int?>(null) }
+    var chatPreviousScreen by remember { mutableStateOf("mensajes") }
+    var currentNotification by remember { mutableStateOf<InAppNotification?>(null) }
 
     LaunchedEffect(Unit) {
         if (TokenManager.hasToken()) {
@@ -78,29 +92,45 @@ fun AppNavigation() {
         }
     }
 
-    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora")
+    LaunchedEffect(currentScreen) {
+        val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle")
+        if (currentScreen in authenticatedScreens && TokenManager.hasToken()) {
+            ChatWebSocket.connect()
+        } else {
+            ChatWebSocket.disconnect()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        ChatWebSocket.inAppNotifications.collect { notification ->
+            currentNotification = notification
+        }
+    }
+
+    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle")
     val isAuthenticated = currentScreen in authenticatedScreens
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey" && currentScreen != "calculadora") {
-                AuthenticatedHeader(
-                    onGoToMessages = { currentScreen = "mensajes" },
-                    onGoToSettings = { currentScreen = "configuracion" }
-                )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey" && currentScreen != "calculadora" && currentScreen != "chat_detalle") {
+                    AuthenticatedHeader(
+                        onGoToMessages = { currentScreen = "mensajes" },
+                        onGoToSettings = { currentScreen = "configuracion" }
+                    )
+                }
+            },
+            bottomBar = {
+                if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey" && currentScreen != "calculadora" && currentScreen != "chat_detalle") {
+                    FloatingIslandFooter(
+                        currentScreen = currentScreen,
+                        onTabSelected = { currentScreen = it }
+                    )
+                }
             }
-        },
-        bottomBar = {
-            if (isAuthenticated && currentScreen != "detalle" && currentScreen != "gestion" && currentScreen != "formulario" && currentScreen != "journey" && currentScreen != "calculadora") {
-                FloatingIslandFooter(
-                    currentScreen = currentScreen,
-                    onTabSelected = { currentScreen = it }
-                )
-            }
-        }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
             when (currentScreen) {
                 "home" -> HomeScreen(
                     onGoToLogin = { currentScreen = "login" },
@@ -202,6 +232,12 @@ fun AppNavigation() {
                     onNavigateToCalculator = {
                         calculatorPropertyId = selectedPropertyId
                         currentScreen = "calculadora"
+                    },
+                    onStartChat = { propertyId ->
+                        chatPreviousScreen = "detalle"
+                        selectedChatId = null
+                        selectedChatPropertyId = propertyId
+                        currentScreen = "chat_detalle"
                     }
                 )
                 "journey" -> JourneyScreen(
@@ -320,7 +356,19 @@ fun AppNavigation() {
                         )
                     }
                 }
-                "mensajes" -> MessagesScreen()
+                "mensajes" -> MessagesScreen(
+                    onChatClick = { chatId ->
+                        chatPreviousScreen = "mensajes"
+                        selectedChatId = chatId
+                        selectedChatPropertyId = null
+                        currentScreen = "chat_detalle"
+                    }
+                )
+                "chat_detalle" -> ChatDetailScreen(
+                    chatId = selectedChatId,
+                    propertyId = selectedChatPropertyId,
+                    onBack = { currentScreen = chatPreviousScreen }
+                )
                 "configuracion" -> SettingsScreen(
                     onLogoutSuccess = {
                         listRefreshKey++
@@ -329,5 +377,18 @@ fun AppNavigation() {
                 )
             }
         }
+        }
+
+        InAppNotificationBanner(
+            notification = currentNotification,
+            onDismiss = { currentNotification = null },
+            onClick = { chatId ->
+                currentNotification = null
+                selectedChatId = chatId
+                selectedChatPropertyId = null
+                chatPreviousScreen = currentScreen
+                currentScreen = "chat_detalle"
+            }
+        )
     }
 }

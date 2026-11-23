@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.SquareFoot
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.ChatBubble
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Height
 import androidx.compose.material.icons.outlined.Layers
@@ -81,6 +82,7 @@ fun PropertyDetailScreen(
     onDelete: (Int) -> Unit = {},
     onNavigateToJourney: (Int) -> Unit = {},
     onNavigateToCalculator: () -> Unit = {},
+    onStartChat: (propertyId: Int) -> Unit = {},
     viewModel: PropertyDetailViewModel = viewModel(),
     mainViewModel: MainViewModel = viewModel(
         factory = MainViewModel.Factory(NetworkModule.authRepository)
@@ -425,7 +427,8 @@ fun PropertyDetailScreen(
                 error = uiState.interestError,
                 onRegister = { viewModel.registerInterest(propertyId) },
                 onViewProgress = { onNavigateToJourney(propertyId) },
-                onRemoveInterest = { viewModel.removeInterest(propertyId) }
+                onRemoveInterest = { viewModel.removeInterest(propertyId) },
+                onContactOwner = { onStartChat(propertyId) }
             )
         }
     }
@@ -439,7 +442,8 @@ private fun InterestFooter(
     error: String?,
     onRegister: () -> Unit,
     onViewProgress: () -> Unit,
-    onRemoveInterest: () -> Unit
+    onRemoveInterest: () -> Unit,
+    onContactOwner: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
     var showConfirmDialog by remember { mutableStateOf(false) }
@@ -455,6 +459,17 @@ private fun InterestFooter(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
+            OutlinedButton(
+                onClick = onContactOwner,
+                modifier = Modifier.fillMaxWidth().height(40.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryTeal)
+            ) {
+                Icon(Icons.Outlined.ChatBubble, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Contactar al propietario", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
+            Spacer(Modifier.height(8.dp))
             InterestButton(
                 state = state,
                 onRegister = onRegister,
