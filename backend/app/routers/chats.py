@@ -135,7 +135,15 @@ def list_chats(
             )
         )
 
-    result.sort(key=lambda x: x.last_message_at or datetime.min.replace(tzinfo=timezone.utc), reverse=True)
+    def _sort_key(x):
+        dt = x.last_message_at
+        if dt is None:
+            return datetime.min.replace(tzinfo=timezone.utc)
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt
+
+    result.sort(key=_sort_key, reverse=True)
     return result
 
 
