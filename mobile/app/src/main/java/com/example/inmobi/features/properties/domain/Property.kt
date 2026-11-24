@@ -79,7 +79,9 @@ data class Property(
     val amenities: List<String> = emptyList(),
     val publishedAt: String?,
     val images: List<PropertyImage> = emptyList(),
-    val priceEstimation: PriceEstimation? = null
+    val priceEstimation: PriceEstimation? = null,
+    val latitude: Double? = null,
+    val longitude: Double? = null
 )
 
 fun PropertyDto.toDomain(): Property = Property(
@@ -109,6 +111,8 @@ fun PropertyDto.toDomain(): Property = Property(
     maintenanceFee = maintenanceFee,
     amenities = amenities,
     publishedAt = publishedAt,
+    latitude = latitude,
+    longitude = longitude,
     images = images.map { img ->
         val fullUrl = if (img.fileUrl.startsWith("http")) {
             img.fileUrl
