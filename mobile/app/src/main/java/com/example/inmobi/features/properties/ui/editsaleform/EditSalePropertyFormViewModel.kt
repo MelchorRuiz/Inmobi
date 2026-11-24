@@ -1,6 +1,7 @@
 package com.example.inmobi.features.properties.ui.editsaleform
 
 import android.content.Context
+import android.location.Geocoder
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
@@ -229,6 +231,45 @@ class EditSalePropertyFormViewModel : ViewModel() {
 
     fun onLocationSelected(latitude: Double, longitude: Double) {
         _formState.update { it.copy(latitude = latitude, longitude = longitude) }
+    }
+
+    fun reverseGeocode(context: Context, latitude: Double, longitude: Double) {
+        _formState.update { it.copy(isGeocoding = true) }
+        viewModelScope.launch {
+            try {
+                val address = withContext(Dispatchers.IO) {
+                    val geocoder = Geocoder(context)
+                    @Suppress("DEPRECATION")
+                    geocoder.getFromLocation(latitude, longitude, 1)?.firstOrNull()
+                }
+
+                if (address != null) {
+                    val streetAddress = buildString {
+                        if (address.thoroughfare != null) append(address.thoroughfare)
+                        if (address.subThoroughfare != null) {
+                            if (isNotEmpty()) append(" ")
+                            append(address.subThoroughfare)
+                        }
+                    }
+
+                    _formState.update {
+                        it.copy(
+                            streetAddress = if (streetAddress.isNotBlank()) streetAddress else it.streetAddress,
+                            neighborhood = address.subLocality ?: it.neighborhood,
+                            postalCode = address.postalCode ?: it.postalCode,
+                            city = address.locality ?: it.city,
+                            stateProvince = address.adminArea ?: it.stateProvince,
+                            country = address.countryName ?: it.country,
+                            isGeocoding = false
+                        )
+                    }
+                } else {
+                    _formState.update { it.copy(isGeocoding = false) }
+                }
+            } catch (e: Exception) {
+                _formState.update { it.copy(isGeocoding = false) }
+            }
+        }
     }
 
     fun onBedroomsChange(value: String) {

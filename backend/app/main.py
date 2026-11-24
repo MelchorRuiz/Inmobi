@@ -17,6 +17,7 @@ from app.routers import (
     files,
     health,
     journey,
+    legal_advice,
     legal_staff,
     properties,
 )
@@ -53,6 +54,7 @@ app.include_router(end_users.router)
 app.include_router(properties.router)
 app.include_router(amenities.router)
 app.include_router(journey.router)
+app.include_router(legal_advice.router)
 app.include_router(dashboard.router)
 app.include_router(chats.router)
 app.include_router(legal_staff.router)

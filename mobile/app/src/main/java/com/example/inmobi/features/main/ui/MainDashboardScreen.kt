@@ -1,10 +1,12 @@
 package com.example.inmobi.features.main.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,11 +17,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Gavel
 import androidx.compose.material.icons.filled.HomeWork
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.HomeWork
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.inmobi.core.ui.theme.DarkTeal
 import com.example.inmobi.core.ui.theme.PrimaryTeal
 import com.example.inmobi.features.properties.domain.ListingStatus
 import com.example.inmobi.features.properties.domain.Property
@@ -49,6 +57,7 @@ import com.example.inmobi.features.properties.ui.common.deviationLabel
 fun MainDashboardScreen(
     onInterestedPropertyClick: (Int) -> Unit = {},
     onPublishedPropertyClick: (Int) -> Unit = {},
+    onNavigateToLegalAdvice: () -> Unit = {},
     viewModel: MainDashboardViewModel = viewModel(factory = MainDashboardViewModel.Factory())
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -79,6 +88,9 @@ fun MainDashboardScreen(
             fontSize = 13.sp,
             color = colorScheme.onSurfaceVariant
         )
+        Spacer(modifier = Modifier.height(20.dp))
+
+        LegalAdviceBanner(onClick = onNavigateToLegalAdvice)
         Spacer(modifier = Modifier.height(20.dp))
 
         when {
@@ -280,5 +292,62 @@ private fun PublishedPropertyCardConfig(property: Property): PropertyCardConfig 
             statText = "Completa para publicar",
             actionText = "Continuar"
         )
+    }
+}
+
+@Composable
+private fun LegalAdviceBanner(onClick: () -> Unit) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = PrimaryTeal)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                        colors = listOf(PrimaryTeal, DarkTeal)
+                    )
+                )
+                .padding(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Gavel,
+                    null,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "¿Necesitas asesoria legal?",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Text(
+                    text = "Solicita asesoramiento sobre tus propiedades de interes",
+                    fontSize = 11.sp,
+                    color = Color.White.copy(alpha = 0.8f),
+                    lineHeight = 14.sp
+                )
+            }
+            Icon(
+                Icons.Default.ChevronRight,
+                null,
+                tint = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.size(20.dp)
+            )
+        }
     }
 }

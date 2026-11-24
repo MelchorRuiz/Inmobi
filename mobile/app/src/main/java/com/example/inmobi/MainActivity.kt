@@ -35,6 +35,7 @@ import com.example.inmobi.features.auth.ui.RegisterScreen
 import com.example.inmobi.features.auth.ui.VerificationSentScreen
 import com.example.inmobi.features.home.ui.HomeScreen
 import com.example.inmobi.features.journey.ui.JourneyScreen
+import com.example.inmobi.features.legal.ui.LegalAdviceScreen
 import com.example.inmobi.features.legal.ui.LegalWelcomeScreen
 import com.example.inmobi.features.main.ui.MainDashboardScreen
 import com.example.inmobi.features.messages.ui.ChatDetailScreen
@@ -121,7 +122,7 @@ fun AppNavigation() {
     }
 
     LaunchedEffect(currentScreen) {
-        val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle", "admin_home", "admin_legal_staff", "legal_welcome")
+    val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle", "admin_home", "admin_legal_staff", "legal_welcome", "legal_advice")
         if (currentScreen in authenticatedScreens && TokenManager.hasToken()) {
             ChatWebSocket.connect()
         } else {
@@ -138,7 +139,7 @@ fun AppNavigation() {
     val authenticatedScreens = listOf("main", "comprar", "rentar", "arrendar", "vender", "mensajes", "configuracion", "detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle", "admin_home", "admin_legal_staff", "legal_welcome")
     val isAuthenticated = currentScreen in authenticatedScreens
     val currentRole = TokenManager.getRole() ?: "user"
-    val hideFooterScreens = setOf("detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle")
+    val hideFooterScreens = setOf("detalle", "gestion", "formulario", "journey", "calculadora", "chat_detalle", "legal_advice")
     val showFooter = isAuthenticated && currentScreen !in hideFooterScreens
 
     val footerTabs = when (currentRole) {
@@ -155,7 +156,7 @@ fun AppNavigation() {
                     AuthenticatedHeader(
                         onGoToMessages = { currentScreen = "mensajes" },
                         onGoToSettings = { currentScreen = "configuracion" },
-                        showMessages = currentRole == "user"
+                        showMessages = currentRole == "user" || currentRole == "legal_staff"
                     )
                 }
             },
@@ -213,11 +214,19 @@ fun AppNavigation() {
                         manageOperationType = "sale"
                         gestionPreviousScreen = "main"
                         currentScreen = "gestion"
-                    }
+                    },
+                    onNavigateToLegalAdvice = { currentScreen = "legal_advice" }
                 )
                 "admin_home" -> AdminDashboardScreen()
                 "admin_legal_staff" -> LegalStaffManagementScreen()
-                "legal_welcome" -> LegalWelcomeScreen()
+                "legal_welcome" -> LegalWelcomeScreen(
+                    onGoToChat = { chatId ->
+                        selectedChatId = chatId
+                        selectedChatPropertyId = null
+                        chatPreviousScreen = "legal_welcome"
+                        currentScreen = "chat_detalle"
+                    }
+                )
                 "vender" -> SellPropertiesScreen(
                     refreshKey = listRefreshKey,
                     onCreateProperty = {
@@ -285,6 +294,9 @@ fun AppNavigation() {
                 "journey" -> JourneyScreen(
                     propertyId = journeyPropertyId ?: 0,
                     onBack = { currentScreen = "detalle" }
+                )
+                "legal_advice" -> LegalAdviceScreen(
+                    onBack = { currentScreen = "main" }
                 )
                 "calculadora" -> PropertyCalculatorScreen(
                     propertyId = calculatorPropertyId ?: 0,

@@ -414,6 +414,7 @@ private fun LocationStep(
                         @JavascriptInterface
                         fun onCoordinateSelected(lat: Double, lng: Double) {
                             viewModel.onLocationSelected(lat, lng)
+                            viewModel.reverseGeocode(ctx, lat, lng)
                         }
                     }, "Android")
                     loadDataWithBaseURL(
