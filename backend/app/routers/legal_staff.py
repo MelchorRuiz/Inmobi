@@ -13,6 +13,7 @@ from app.schemas.legal_staff import (
     LegalStaffUpdate,
     LegalStaffUserResponse,
 )
+from app.schemas.user import UserResponse
 from app.security import hash_password
 
 router = APIRouter(prefix="/legal-staff", tags=["Legal Staff"])
@@ -21,7 +22,7 @@ admin_only = require_roles(Role.ADMINISTRATOR)
 legal_staff_only = require_roles(Role.LEGAL_STAFF)
 
 
-@router.patch("/me/", response_model=LegalStaffUserResponse)
+@router.patch("/me/", response_model=UserResponse)
 def update_my_legal_staff_profile(
     payload: LegalStaffSelfUpdate,
     current_user: User = Depends(legal_staff_only),
