@@ -48,8 +48,16 @@ class LoginViewModel(
 
     fun login(onSuccess: (role: String) -> Unit) {
         val state = _formState.value
-        val emailError = validateEmail(state.email)
-        val passwordError = validatePassword(state.password)
+        
+        val emailError = when {
+            state.email.isBlank() -> "El correo electrónico es obligatorio"
+            else -> validateEmail(state.email)
+        }
+        
+        val passwordError = when {
+            state.password.isBlank() -> "La contraseña es obligatoria"
+            else -> validatePassword(state.password)
+        }
 
         if (emailError != null || passwordError != null) {
             _formState.update {

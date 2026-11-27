@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.inmobi.core.ui.theme.PrimaryTeal
+import com.example.inmobi.core.util.UrlResolver
 import com.example.inmobi.features.messages.data.dto.ChatSummaryDto
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
@@ -148,7 +149,7 @@ private fun ChatCard(chat: ChatSummaryDto, onClick: () -> Unit) {
                 ) {
                     if (chat.otherUser.avatarUrl != null) {
                         AsyncImage(
-                            model = chat.otherUser.avatarUrl,
+                            model = UrlResolver.resolveImageUrl(chat.otherUser.avatarUrl),
                             contentDescription = chat.otherUser.fullName,
                             modifier = Modifier.fillMaxSize().clip(CircleShape)
                         )

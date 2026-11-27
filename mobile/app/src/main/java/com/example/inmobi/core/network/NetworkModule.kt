@@ -4,6 +4,8 @@ import com.example.inmobi.features.admin.data.LegalStaffApi
 import com.example.inmobi.features.admin.data.LegalStaffRepository
 import com.example.inmobi.features.auth.data.AuthApi
 import com.example.inmobi.features.auth.data.AuthRepository
+import com.example.inmobi.features.settings.data.SettingsApi
+import com.example.inmobi.features.settings.data.SettingsRepository
 
 object NetworkModule {
 
@@ -21,5 +23,13 @@ object NetworkModule {
 
     val legalStaffRepository: LegalStaffRepository by lazy {
         LegalStaffRepository()
+    }
+
+    val settingsApi: SettingsApi by lazy {
+        RetrofitClient.create()
+    }
+
+    val settingsRepository: SettingsRepository by lazy {
+        SettingsRepository(settingsApi)
     }
 }

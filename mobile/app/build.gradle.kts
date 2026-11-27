@@ -43,7 +43,7 @@ android {
             optimization {
                 enable = false
             }
-            buildConfigField("String", "BASE_URL", "\"https://api.inmobi.com/\"")
+            buildConfigField("String", "BASE_URL", "\"https://proyecto-inmobi-api.onrender.com/\"")
             buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${localProperties.getProperty("google.client.id", "")}\"")
         }
     }

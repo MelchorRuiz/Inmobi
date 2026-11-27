@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.inmobi.core.network.InAppNotification
 import com.example.inmobi.core.ui.theme.PrimaryTeal
+import com.example.inmobi.core.util.UrlResolver
 import kotlinx.coroutines.delay
 
 @Composable
@@ -88,7 +89,7 @@ fun InAppNotificationBanner(
                         ) {
                             if (notif.senderAvatarUrl != null) {
                                 AsyncImage(
-                                    model = notif.senderAvatarUrl,
+                                    model = UrlResolver.resolveImageUrl(notif.senderAvatarUrl),
                                     contentDescription = notif.senderName,
                                     modifier = Modifier.fillMaxSize().clip(CircleShape)
                                 )

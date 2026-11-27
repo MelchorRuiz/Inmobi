@@ -43,7 +43,6 @@ import com.example.inmobi.features.messages.ui.MessagesScreen
 import com.example.inmobi.features.properties.ui.buy.BuyPropertyScreen
 import com.example.inmobi.features.properties.ui.calculator.PropertyCalculatorScreen
 import com.example.inmobi.features.properties.ui.detail.PropertyDetailScreen
-import com.example.inmobi.features.properties.ui.form.PropertyFormScreen
 import com.example.inmobi.features.properties.ui.lease.LeasePropertiesScreen
 import com.example.inmobi.features.properties.ui.manage.ManagePropertyScreen
 import com.example.inmobi.features.properties.ui.rent.RentPropertyScreen

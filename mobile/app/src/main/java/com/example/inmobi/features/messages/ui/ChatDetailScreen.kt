@@ -50,6 +50,7 @@ import coil.compose.AsyncImage
 import com.example.inmobi.core.network.ChatWebSocket
 import com.example.inmobi.core.network.NetworkModule
 import com.example.inmobi.core.ui.theme.PrimaryTeal
+import com.example.inmobi.core.util.UrlResolver
 import com.example.inmobi.features.auth.ui.MainViewModel
 import com.example.inmobi.features.messages.data.dto.MessageDto
 
@@ -123,7 +124,7 @@ fun ChatDetailScreen(
                     ) {
                         if (chat.otherUser.avatarUrl != null) {
                             AsyncImage(
-                                model = chat.otherUser.avatarUrl,
+                                model = UrlResolver.resolveImageUrl(chat.otherUser.avatarUrl),
                                 contentDescription = chat.otherUser.fullName,
                                 modifier = Modifier.fillMaxSize().clip(CircleShape)
                             )
