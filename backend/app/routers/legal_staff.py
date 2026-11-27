@@ -9,6 +9,7 @@ from app.models.user import Role, User
 from app.schemas.legal_staff import (
     LegalStaffCreate,
     LegalStaffResponse,
+    LegalStaffSelfUpdate,
     LegalStaffUpdate,
     LegalStaffUserResponse,
 )
@@ -17,6 +18,58 @@ from app.security import hash_password
 router = APIRouter(prefix="/legal-staff", tags=["Legal Staff"])
 
 admin_only = require_roles(Role.ADMINISTRATOR)
+legal_staff_only = require_roles(Role.LEGAL_STAFF)
+
+
+@router.patch("/me/", response_model=LegalStaffUserResponse)
+def update_my_legal_staff_profile(
+    payload: LegalStaffSelfUpdate,
+    current_user: User = Depends(legal_staff_only),
+    db: Session = Depends(get_db),
+):
+    data = payload.model_dump(exclude_unset=True)
+
+    legal_data = {
+        key: data.pop(key)
+        for key in ("id_number", "specialty", "firm_name", "phone")
+        if key in data
+    }
+
+    if "id_number" in legal_data and legal_data["id_number"] is not None:
+        conflict = (
+            db.query(LegalStaff)
+            .filter(
+                LegalStaff.id_number == legal_data["id_number"],
+                LegalStaff.user_id != current_user.id,
+            )
+            .first()
+        )
+        if conflict:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="id number is already registered",
+            )
+
+    if "phone" in legal_data:
+        new_phone = legal_data["phone"]
+        if new_phone is not None:
+            conflict = db.query(EndUser).filter(EndUser.phone == new_phone).first()
+            if conflict and conflict.user_id != current_user.id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="phone number is already registered",
+                )
+
+    for key in ("full_name",):
+        if key in data:
+            setattr(current_user, key, data[key])
+
+    for key, value in legal_data.items():
+        setattr(current_user.legal_staff, key, value)
+
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 
 @router.post(

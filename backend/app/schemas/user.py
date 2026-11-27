@@ -63,6 +63,7 @@ class UserResponse(BaseModel):
     role: Role
     is_active: bool
     created_at: datetime
+    has_password: bool
     end_user: EndUserResponse | None = None
     legal_staff: LegalStaffResponse | None = None
 
@@ -99,3 +100,12 @@ class SessionResponse(BaseModel):
     role: Role
     is_profile_complete: bool
     has_profile_picture: bool
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8, max_length=72)
+
+
+class PasswordSet(BaseModel):
+    new_password: str = Field(min_length=8, max_length=72)

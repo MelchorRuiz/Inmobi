@@ -33,6 +33,14 @@ class LegalStaffUpdate(BaseModel):
     phone: PhoneNumber | None = None
 
 
+class LegalStaffSelfUpdate(BaseModel):
+    full_name: str | None = Field(default=None, min_length=2, max_length=120)
+    id_number: str | None = Field(default=None, min_length=1, max_length=40)
+    specialty: str | None = Field(default=None, min_length=2, max_length=120)
+    firm_name: str | None = Field(default=None, max_length=120)
+    phone: PhoneNumber | None = None
+
+
 class LegalStaffResponse(BaseModel):
     id_number: str
     specialty: str

@@ -1,7 +1,9 @@
 import jwt
+import uuid
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -15,6 +17,8 @@ from app.models.user import Role, User
 from app.schemas.user import (
     GoogleLogin,
     LogoutRequest,
+    PasswordChange,
+    PasswordSet,
     RefreshRequest,
     ResendVerificationRequest,
     SessionResponse,
@@ -26,6 +30,7 @@ from app.security import (
     create_access_token,
     create_verification_token,
     decode_verification_token,
+    hash_password,
     verify_password,
 )
 from app.sessions import (
@@ -42,6 +47,9 @@ from app.sessions import (
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 RESEND_COOLDOWN_SECONDS = 60
+FILES_DIR = Path(__file__).resolve().parent.parent.parent / "files"
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+MAX_AVATAR_SIZE = 5 * 1024 * 1024
 
 
 @router.post("/login/", response_model=SessionResponse)
@@ -235,6 +243,103 @@ def logout(
 @router.get("/me/", response_model=UserResponse)
 def read_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.post("/me/avatar/")
+async def upload_avatar(
+    file: UploadFile,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role == Role.ADMINISTRATOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="administrators cannot update their profile",
+        )
+
+    if file.filename:
+        ext = Path(file.filename).suffix.lower()
+    else:
+        ext = ""
+
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"only image files are allowed: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}",
+        )
+
+    content = await file.read()
+    if len(content) > MAX_AVATAR_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
+            detail="file size exceeds 5MB limit",
+        )
+
+    FILES_DIR.mkdir(parents=True, exist_ok=True)
+    filename = f"{uuid.uuid4()}{ext}"
+    filepath = FILES_DIR / filename
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    current_user.avatar_url = f"files/{filename}"
+    db.commit()
+
+    return {"url": current_user.avatar_url}
+
+
+@router.post("/me/change-password/")
+def change_password(
+    payload: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role == Role.ADMINISTRATOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="administrators cannot update their profile",
+        )
+
+    if current_user.password_hash is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="this account does not have a password set",
+        )
+
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="current password is incorrect",
+        )
+
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+
+    return {"message": "password changed successfully"}
+
+
+@router.post("/me/set-password/")
+def set_password(
+    payload: PasswordSet,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role == Role.ADMINISTRATOR:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="administrators cannot update their profile",
+        )
+
+    if current_user.password_hash is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="this account already has a password set, use change-password instead",
+        )
+
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+
+    return {"message": "password set successfully"}
 
 
 def _resolve_refresh_token(

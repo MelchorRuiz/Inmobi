@@ -60,5 +60,9 @@ class User(Base):
     def has_profile_picture(self) -> bool:
         return bool(self.avatar_url)
 
+    @property
+    def has_password(self) -> bool:
+        return self.password_hash is not None
+
     def __repr__(self) -> str:
         return f"<User {self.id} {self.email} {self.role.value}>"
