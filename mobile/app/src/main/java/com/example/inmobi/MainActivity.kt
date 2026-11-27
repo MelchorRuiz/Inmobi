@@ -373,40 +373,6 @@ fun AppNavigation() {
                                 }
                             }
                         )
-                    } else {
-                        PropertyFormScreen(
-                            propertyId = editPropertyId,
-                            defaultOperationType = formOperationType,
-                            onBack = {
-                                if (fromManage) {
-                                    currentScreen = "gestion"
-                                    fromManage = false
-                                } else {
-                                    currentScreen = when (formOperationType) {
-                                        "sale" -> "vender"
-                                        "rent" -> "arrendar"
-                                        else -> previousScreen
-                                    }
-                                }
-                            },
-                            onSaved = {
-                                listRefreshKey++
-                                if (fromManage) {
-                                    currentScreen = when (formOperationType) {
-                                        "sale" -> "vender"
-                                        "rent" -> "arrendar"
-                                        else -> previousScreen
-                                    }
-                                    fromManage = false
-                                } else {
-                                    currentScreen = when (formOperationType) {
-                                        "sale" -> "vender"
-                                        "rent" -> "arrendar"
-                                        else -> previousScreen
-                                    }
-                                }
-                            }
-                        )
                     }
                 }
                 "mensajes" -> MessagesScreen(
