@@ -122,9 +122,9 @@ class LoginViewModel(
                 }
                 .onFailure { throwable ->
                     val message = when (throwable) {
-                        is LoginException.AccountDeactivated -> "Esta cuenta esta desactivada"
+                        is LoginException.AccountDeactivated -> "Esta cuenta está desactivada"
                         is LoginException.Generic -> throwable.message
-                        else -> throwable.message ?: "Error al iniciar sesion con Google"
+                        else -> throwable.message ?: "Error al iniciar sesión con Google"
                     }
                     _formState.update {
                         it.copy(isGoogleLoading = false, googleError = message)

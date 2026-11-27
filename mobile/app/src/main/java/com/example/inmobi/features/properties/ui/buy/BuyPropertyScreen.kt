@@ -102,14 +102,14 @@ fun BuyPropertyScreen(
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
                     Icon(Icons.Outlined.ShoppingBag, null, tint = PrimaryTeal, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Catalogo de compra", color = PrimaryTeal, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Catálogo de compra", color = PrimaryTeal, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
             Spacer(Modifier.height(12.dp))
-            Text("Encuentra tu proximo hogar", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = colorScheme.onSurface)
+            Text("Encuentra tu próximo hogar", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = colorScheme.onSurface)
             Spacer(Modifier.height(4.dp))
-            Text("Propiedades analizadas con datos notariales reales y tasacion neutra para asegurar una inversion transparente.", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, lineHeight = 16.sp)
+            Text("Propiedades analizadas con datos notariales reales y tasación neutra para asegurar una inversión transparente.", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, lineHeight = 16.sp)
             Spacer(Modifier.height(16.dp))
 
             if (!uiState.isLoading && uiState.error == null && uiState.properties.isNotEmpty()) {

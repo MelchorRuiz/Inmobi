@@ -87,7 +87,7 @@ class ProfileCompletionViewModel(
                 .onFailure { throwable ->
                     val errorMessage = throwable.message ?: ""
                     if (errorMessage.contains("phone number is already registered", ignoreCase = true)) {
-                        _formState.update { it.copy(isSubmitting = false, phoneError = "Este numero ya esta registrado") }
+                        _formState.update { it.copy(isSubmitting = false, phoneError = "Este número ya está registrado") }
                     } else {
                         _formState.update { it.copy(isSubmitting = false, serverError = errorMessage) }
                     }
@@ -96,14 +96,14 @@ class ProfileCompletionViewModel(
     }
 
     private fun validatePhone(value: String): String? {
-        if (value.isBlank()) return "El telefono es obligatorio"
-        if (value.length != 10) return "El telefono debe tener 10 digitos"
+        if (value.isBlank()) return "El teléfono es obligatorio"
+        if (value.length != 10) return "El teléfono debe tener 10 dígitos"
         return null
     }
 
     private fun validateBirthDate(value: String): String? {
         if (value.isBlank()) return "La fecha de nacimiento es obligatoria"
-        if (!isAdult(value)) return "Debes ser mayor de 18 anos"
+        if (!isAdult(value)) return "Debes ser mayor de 18 años"
         return null
     }
 
@@ -113,7 +113,7 @@ class ProfileCompletionViewModel(
     }
 
     private fun validatePrivacy(value: Boolean): String? {
-        if (!value) return "Debes aceptar la Politica de Privacidad"
+        if (!value) return "Debes aceptar la Política de Privacidad"
         return null
     }
 

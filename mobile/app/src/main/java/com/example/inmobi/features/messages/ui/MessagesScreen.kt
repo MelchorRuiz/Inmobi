@@ -83,7 +83,7 @@ fun MessagesScreen(
         Spacer(Modifier.height(12.dp))
         Text("Tus conversaciones", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = colorScheme.onSurface)
         Spacer(Modifier.height(4.dp))
-        Text("Comunicate directamente con propietarios y el soporte automatizado de Inmobi.", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, lineHeight = 16.sp)
+        Text("Comunícate directamente con propietarios y el soporte automatizado de Inmobi.", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, lineHeight = 16.sp)
         Spacer(Modifier.height(20.dp))
 
         when {

@@ -166,7 +166,7 @@ private fun EmptyDashboardMessage() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Tu dashboard esta vacio",
+                text = "Tu dashboard está vacío",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface,
@@ -176,7 +176,7 @@ private fun EmptyDashboardMessage() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Comienza a explorar propiedades, muestra interes en las que te gusten y publica las tuyas para gestionarlas desde aqui.",
+                text = "Comienza a explorar propiedades, muestra interés en las que te gusten y publica las tuyas para gestionarlas desde aquí.",
                 fontSize = 14.sp,
                 color = colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
@@ -282,7 +282,7 @@ private fun PublishedPropertyCardConfig(property: Property): PropertyCardConfig 
             statusText = "Cerrada",
             statusColor = Color(0xFF64748B),
             statusBgColor = Color(0xFFF1F5F9),
-            statText = "Operacion cerrada",
+            statText = "Operación cerrada",
             actionText = "Ver"
         )
         else -> PropertyCardConfig(
@@ -330,13 +330,13 @@ private fun LegalAdviceBanner(onClick: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "¿Necesitas asesoria legal?",
+                    text = "¿Necesitas asesoría legal?",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
                 Text(
-                    text = "Solicita asesoramiento sobre tus propiedades de interes",
+                    text = "Solicita asesoramiento sobre tus propiedades de interés",
                     fontSize = 11.sp,
                     color = Color.White.copy(alpha = 0.8f),
                     lineHeight = 14.sp

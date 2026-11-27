@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -249,7 +250,7 @@ private fun StepIndicator(
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val stepLabels = listOf("Basica", "Ubicacion", "Detalles", "Fotos")
+    val stepLabels = listOf("Básica", "Ubicación", "Detalles", "Fotos")
 
     Row(
         modifier = modifier,
@@ -308,18 +309,18 @@ private fun BasicInfoStep(
 
     Spacer(modifier = Modifier.height(8.dp))
 
-    FieldLabel(icon = Icons.Outlined.Title, label = "Titulo de la publicacion *")
+    FieldLabel(icon = Icons.Outlined.Title, label = "Título de la publicación *")
     FormTextField(
         value = formState.listingTitle,
         onValueChange = { viewModel.onListingTitleChange(it) },
-        placeholder = "Ej. Casa en venta en Coyoacan",
+        placeholder = "Ej. Casa en venta en Coyoacán",
         isError = formState.touchedFields.contains("listingTitle") && formState.errors["listingTitle"] != null,
         errorMessage = if (formState.touchedFields.contains("listingTitle")) formState.errors["listingTitle"] else null,
         errorColor = errorColor
     )
     Spacer(modifier = Modifier.height(12.dp))
 
-    FieldLabel(icon = Icons.Outlined.Description, label = "Descripcion")
+    FieldLabel(icon = Icons.Outlined.Description, label = "Descripción")
     FormTextField(
         value = formState.description,
         onValueChange = { viewModel.onDescriptionChange(it) },
@@ -445,7 +446,7 @@ private fun LocationStep(
     Spacer(modifier = Modifier.height(16.dp))
 
     Text(
-        text = "Datos de ubicacion",
+        text = "Datos de ubicación",
         fontSize = 14.sp,
         fontWeight = FontWeight.Bold,
         color = colorScheme.onSurface
@@ -459,19 +460,19 @@ private fun LocationStep(
 
     Spacer(modifier = Modifier.height(12.dp))
 
-    FieldLabel(icon = Icons.Outlined.Map, label = "Pais")
+    FieldLabel(icon = Icons.Outlined.Map, label = "País")
     FormTextField(
         value = formState.country,
         onValueChange = { viewModel.onCountryChange(it) },
-        placeholder = "Ej. Mexico"
+        placeholder = "Ej. México"
     )
     Spacer(modifier = Modifier.height(12.dp))
 
-    FieldLabel(icon = Icons.Outlined.Map, label = "Direccion *")
+    FieldLabel(icon = Icons.Outlined.Map, label = "Dirección *")
     FormTextField(
         value = formState.streetAddress,
         onValueChange = { viewModel.onStreetAddressChange(it) },
-        placeholder = "Calle y numero",
+        placeholder = "Calle y número",
         isError = formState.touchedFields.contains("streetAddress") && formState.errors["streetAddress"] != null,
         errorMessage = if (formState.touchedFields.contains("streetAddress")) formState.errors["streetAddress"] else null,
         errorColor = errorColor
@@ -482,13 +483,13 @@ private fun LocationStep(
     FormTextField(
         value = formState.neighborhood,
         onValueChange = { viewModel.onNeighborhoodChange(it) },
-        placeholder = "Ej. Coyoacan"
+        placeholder = "Ej. Coyoacán"
     )
     Spacer(modifier = Modifier.height(12.dp))
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(icon = Icons.Outlined.Map, label = "Codigo Postal")
+            FieldLabel(icon = Icons.Outlined.Map, label = "Código Postal")
             FormTextField(
                 value = formState.postalCode,
                 onValueChange = { viewModel.onPostalCodeChange(it) },
@@ -505,7 +506,7 @@ private fun LocationStep(
             FormTextField(
                 value = formState.city,
                 onValueChange = { viewModel.onCityChange(it) },
-                placeholder = "Ej. Ciudad de Mexico",
+                placeholder = "Ej. Ciudad de México",
                 isError = formState.touchedFields.contains("city") && formState.errors["city"] != null,
                 errorMessage = if (formState.touchedFields.contains("city")) formState.errors["city"] else null,
                 errorColor = errorColor
@@ -543,7 +544,7 @@ private fun CharacteristicsAmenitiesStep(
     Spacer(modifier = Modifier.height(8.dp))
 
     Text(
-        text = "Caracteristicas",
+        text = "Características",
         fontSize = 14.sp,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.onSurface
@@ -552,7 +553,7 @@ private fun CharacteristicsAmenitiesStep(
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(icon = Icons.Outlined.Bathtub, label = "Recamaras")
+            FieldLabel(icon = Icons.Outlined.Bathtub, label = "Recámaras")
             FormNumberField(
                 value = formState.bedrooms,
                 onValueChange = { viewModel.onBedroomsChange(it) }
@@ -560,7 +561,7 @@ private fun CharacteristicsAmenitiesStep(
         }
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(icon = Icons.Outlined.Wc, label = "Banos compl.")
+            FieldLabel(icon = Icons.Outlined.Wc, label = "Baños compl.")
             FormNumberField(
                 value = formState.fullBathrooms,
                 onValueChange = { viewModel.onFullBathroomsChange(it) }
@@ -568,7 +569,7 @@ private fun CharacteristicsAmenitiesStep(
         }
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(icon = Icons.Outlined.Wc, label = "Medios banos")
+            FieldLabel(icon = Icons.Outlined.Wc, label = "Medios baños")
             FormNumberField(
                 value = formState.halfBathrooms,
                 onValueChange = { viewModel.onHalfBathroomsChange(it) }
@@ -579,7 +580,7 @@ private fun CharacteristicsAmenitiesStep(
 
     Row(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(icon = Icons.Outlined.Carpenter, label = "Area construida (m2)")
+            FieldLabel(icon = Icons.Outlined.Carpenter, label = "Área construida (m2)")
             FormDecimalField(
                 value = formState.builtAreaSqm,
                 onValueChange = { viewModel.onBuiltAreaSqmChange(it) }
@@ -587,7 +588,7 @@ private fun CharacteristicsAmenitiesStep(
         }
         Spacer(modifier = Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            FieldLabel(icon = Icons.Outlined.Grass, label = "Area terreno (m2)")
+            FieldLabel(icon = Icons.Outlined.Grass, label = "Área terreno (m2)")
             FormDecimalField(
                 value = formState.lotSizeSqm,
                 onValueChange = { viewModel.onLotSizeSqmChange(it) }
@@ -615,7 +616,7 @@ private fun CharacteristicsAmenitiesStep(
     }
     Spacer(modifier = Modifier.height(12.dp))
 
-    FieldLabel(icon = Icons.Outlined.CalendarMonth, label = "Antiguedad (anos)")
+    FieldLabel(icon = Icons.Outlined.CalendarMonth, label = "Antigüedad (años)")
     FormNumberField(
         value = formState.propertyAgeYears,
         onValueChange = { viewModel.onPropertyAgeYearsChange(it) }
@@ -683,7 +684,7 @@ private fun PhotosStep(
     )
     Spacer(modifier = Modifier.height(4.dp))
     Text(
-        text = "Sube fotos para mostrar tu propiedad. Puedes agregar varias imagenes.",
+        text = "Sube fotos para mostrar tu propiedad. Puedes agregar varias imágenes.",
         fontSize = 12.sp,
         color = colorScheme.onSurfaceVariant
     )
@@ -704,7 +705,7 @@ private fun PhotosStep(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Subiendo imagenes...",
+                    text = "Subiendo imágenes...",
                     fontSize = 12.sp,
                     color = colorScheme.onSurfaceVariant
                 )
@@ -770,7 +771,7 @@ private fun StepNavigationButtons(
         if (currentStep > 0) {
             OutlinedButton(
                 onClick = onPrevious,
-                modifier = Modifier.weight(1f).height(46.dp),
+                modifier = Modifier.weight(1f).defaultMinSize(minHeight = 46.dp),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
@@ -784,7 +785,7 @@ private fun StepNavigationButtons(
         if (currentStep < 3) {
             Button(
                 onClick = onNext,
-                modifier = Modifier.weight(1f).height(46.dp),
+                modifier = Modifier.weight(1f).defaultMinSize(minHeight = 46.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal)
             ) {
@@ -798,7 +799,7 @@ private fun StepNavigationButtons(
         } else {
             Button(
                 onClick = onSubmit,
-                modifier = Modifier.weight(1f).height(46.dp),
+                modifier = Modifier.weight(1f).defaultMinSize(minHeight = 46.dp),
                 shape = RoundedCornerShape(10.dp),
                 enabled = !isSubmitting && !isUploadingImages,
                 colors = ButtonDefaults.buttonColors(containerColor = PrimaryTeal)

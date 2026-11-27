@@ -225,7 +225,7 @@ fun LoginScreen(
                                 colors = ButtonDefaults.textButtonColors(contentColor = PrimaryTeal)
                             ) {
                                 Text(
-                                    text = "Reenviar correo de verificacion",
+                                    text = "Reenviar correo de verificación",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )

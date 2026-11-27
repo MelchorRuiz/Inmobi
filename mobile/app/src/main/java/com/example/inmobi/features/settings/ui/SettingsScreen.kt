@@ -190,7 +190,7 @@ fun SettingsScreen(
                 }
             }
             Text(
-                "Configuracion",
+                "Configuración",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface
@@ -367,7 +367,7 @@ fun SettingsScreen(
                                     ) {
                                         Icon(Icons.Default.Person, null, tint = Color.White, modifier = androidx.compose.ui.Modifier.size(18.dp))
                                         Spacer(Modifier.width(8.dp))
-                                        Text("Editar informacion", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                        Text("Editar información", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                                     }
                                 } else {
                                     ProfileFormFields(
@@ -450,7 +450,7 @@ fun SettingsScreen(
                                     Icon(Icons.Default.Lock, null, tint = Color.White, modifier = androidx.compose.ui.Modifier.size(18.dp))
                                     Spacer(Modifier.width(8.dp))
                                     Text(
-                                        if (user.hasPassword) "Cambiar contrasena" else "Crear contrasena",
+                                        if (user.hasPassword) "Cambiar contraseña" else "Crear contraseña",
                                         color = Color.White,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold
@@ -470,7 +470,7 @@ fun SettingsScreen(
                     ) {
                         Icon(Icons.AutoMirrored.Filled.Logout, null, tint = Color.White, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Cerrar sesion", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Cerrar sesión", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     }
 
                     Spacer(Modifier.height(20.dp))
@@ -537,7 +537,7 @@ private fun ProfileFormFields(
             
             Spacer(Modifier.height(10.dp))
             SettingsTextField(
-                label = "Telefono (10 digitos)",
+                label = "Teléfono (10 dígitos)",
                 value = state.phone,
                 onValueChange = { viewModel.updatePhone(it) },
                 keyboardType = KeyboardType.Phone,
@@ -573,7 +573,7 @@ private fun ProfileFormFields(
             )
             Spacer(Modifier.height(10.dp))
             SettingsTextField(
-                label = "Telefono (10 digitos)",
+                label = "Teléfono (10 dígitos)",
                 value = state.staffPhone,
                 onValueChange = { viewModel.updateStaffPhone(it) },
                 keyboardType = KeyboardType.Phone,
@@ -663,13 +663,13 @@ private fun ChangePasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Cambiar contrasena", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
+        title = { Text("Cambiar contraseña", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 OutlinedTextField(
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
-                    label = { Text("Contrasena actual", fontSize = 13.sp) },
+                    label = { Text("Contraseña actual", fontSize = 13.sp) },
                     singleLine = true,
                     visualTransformation = if (showCurrentPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -695,7 +695,7 @@ private fun ChangePasswordDialog(
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { Text("Nueva contrasena", fontSize = 13.sp) },
+                    label = { Text("Nueva contraseña", fontSize = 13.sp) },
                     singleLine = true,
                     visualTransformation = if (showNewPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -718,13 +718,13 @@ private fun ChangePasswordDialog(
                     )
                 )
                 if (newPassword.isNotBlank() && newPassword.length < 8) {
-                    Text("Minimo 8 caracteres", fontSize = 11.sp, color = Color(0xFFE53E3E))
+                    Text("Mínimo 8 caracteres", fontSize = 11.sp, color = Color(0xFFE53E3E))
                 }
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { Text("Confirmar nueva contrasena", fontSize = 13.sp) },
+                    label = { Text("Confirmar nueva contraseña", fontSize = 13.sp) },
                     singleLine = true,
                     visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -747,7 +747,7 @@ private fun ChangePasswordDialog(
                     )
                 )
                 if (confirmPassword.isNotBlank() && newPassword != confirmPassword) {
-                    Text("Las contrasenas no coinciden", fontSize = 11.sp, color = Color(0xFFE53E3E))
+                    Text("Las contraseñas no coinciden", fontSize = 11.sp, color = Color(0xFFE53E3E))
                 }
             }
         },
@@ -782,11 +782,11 @@ private fun SetPasswordDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Crear contrasena", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
+        title = { Text("Crear contraseña", fontSize = 18.sp, fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 Text(
-                    "Crea una contrasena para poder iniciar sesion con tu email y contrasena.",
+                    "Crea una contraseña para poder iniciar sesión con tu email y contraseña.",
                     fontSize = 13.sp,
                     color = colorScheme.onSurfaceVariant
                 )
@@ -794,7 +794,7 @@ private fun SetPasswordDialog(
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { Text("Nueva contrasena", fontSize = 13.sp) },
+                    label = { Text("Nueva contraseña", fontSize = 13.sp) },
                     singleLine = true,
                     visualTransformation = if (showNewPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -817,13 +817,13 @@ private fun SetPasswordDialog(
                     )
                 )
                 if (newPassword.isNotBlank() && newPassword.length < 8) {
-                    Text("Minimo 8 caracteres", fontSize = 11.sp, color = Color(0xFFE53E3E))
+                    Text("Mínimo 8 caracteres", fontSize = 11.sp, color = Color(0xFFE53E3E))
                 }
                 Spacer(Modifier.height(12.dp))
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { Text("Confirmar contrasena", fontSize = 13.sp) },
+                    label = { Text("Confirmar contraseña", fontSize = 13.sp) },
                     singleLine = true,
                     visualTransformation = if (showConfirmPassword) VisualTransformation.None else PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -846,7 +846,7 @@ private fun SetPasswordDialog(
                     )
                 )
                 if (confirmPassword.isNotBlank() && newPassword != confirmPassword) {
-                    Text("Las contrasenas no coinciden", fontSize = 11.sp, color = Color(0xFFE53E3E))
+                    Text("Las contraseñas no coinciden", fontSize = 11.sp, color = Color(0xFFE53E3E))
                 }
             }
         },

@@ -100,7 +100,7 @@ fun LegalAdviceScreen(
             Icon(Icons.Default.Gavel, null, tint = PrimaryTeal, modifier = Modifier.size(22.dp))
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "Asesoria Legal",
+                text = "Asesoría Legal",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = colorScheme.onSurface
@@ -139,13 +139,13 @@ fun LegalAdviceScreen(
                         )
                         Spacer(Modifier.height(16.dp))
                         Text(
-                            text = "No tienes propiedades con interes",
+                            text = "No tienes propiedades con interés",
                             fontSize = 16.sp,
                             color = colorScheme.onSurfaceVariant
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Muestra interes en una propiedad para poder solicitar asesoria legal sobre ella.",
+                            text = "Muestra interés en una propiedad para poder solicitar asesoría legal sobre ella.",
                             fontSize = 13.sp,
                             color = colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 32.dp)
@@ -186,7 +186,7 @@ fun LegalAdviceScreen(
             },
             onSubmit = {
                 if (descriptionText.length < 10) {
-                    descriptionError = "Minimo 10 caracteres"
+                    descriptionError = "Mínimo 10 caracteres"
                 } else {
                     viewModel.submitRequest(selectedPropertyId!!, descriptionText)
                 }
@@ -293,7 +293,7 @@ private fun InterestedPropertyCard(
                     }
                 } else {
                     Text(
-                        text = "Toca para solicitar asesoria",
+                        text = "Toca para solicitar asesoría",
                         fontSize = 12.sp,
                         color = PrimaryTeal,
                         fontWeight = FontWeight.Medium
@@ -323,7 +323,7 @@ private fun LegalAdviceRequestDialog(
         },
         title = {
             Text(
-                text = "Solicitar Asesoria Legal",
+                text = "Solicitar Asesoría Legal",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )

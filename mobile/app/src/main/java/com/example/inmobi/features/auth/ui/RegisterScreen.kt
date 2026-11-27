@@ -679,7 +679,7 @@ fun RegisterScreen(
                                     }
                                     .onFailure { throwable ->
                                         isGoogleLoading = false
-                                        googleError = throwable.message ?: "Error al iniciar sesion con Google"
+                                        googleError = throwable.message ?: "Error al iniciar sesión con Google"
                                     }
                             }
                         },

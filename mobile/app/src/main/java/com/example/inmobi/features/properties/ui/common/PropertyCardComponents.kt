@@ -58,7 +58,7 @@ fun PropertyCard(
     onTrailingIconClick: () -> Unit = {},
     onActionClick: () -> Unit = {},
     actionLabel: String = "Ver detalles",
-    bottomLabel: String = "Tasacion neutral verificada",
+    bottomLabel: String = "Tasación neutral verificada",
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme

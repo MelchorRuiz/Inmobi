@@ -80,7 +80,7 @@ fun LegalWelcomeScreen(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                text = "Solicitudes de Asesoria",
+                text = "Solicitudes de Asesoría",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = colorScheme.onSurface
@@ -142,7 +142,7 @@ fun LegalWelcomeScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            text = "Cuando un usuario solicite asesoria legal, aparecera aqui.",
+                            text = "Cuando un usuario solicite asesoría legal, aparecerá aquí.",
                             fontSize = 13.sp,
                             color = colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(horizontal = 32.dp)

@@ -143,14 +143,14 @@ fun PropertySummarySheet(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (property.bedrooms != null) {
-                    SheetSpecItem(Icons.Default.Bed, "${property.bedrooms} hab", "Recamaras")
+                    SheetSpecItem(Icons.Default.Bed, "${property.bedrooms} hab", "Recámaras")
                 }
                 val totalBaths = (property.fullBathrooms ?: 0) + (property.halfBathrooms ?: 0)
                 if (totalBaths > 0) {
-                    SheetSpecItem(Icons.Default.Bathtub, "$totalBaths", "Banos")
+                    SheetSpecItem(Icons.Default.Bathtub, "$totalBaths", "Baños")
                 }
                 property.builtAreaSqm?.let {
-                    SheetSpecItem(Icons.Default.SquareFoot, "${it.toInt()} m2", "Construccion")
+                    SheetSpecItem(Icons.Default.SquareFoot, "${it.toInt()} m2", "Construcción")
                 }
             }
 

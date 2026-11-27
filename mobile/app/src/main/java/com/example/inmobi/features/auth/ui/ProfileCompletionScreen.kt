@@ -243,7 +243,7 @@ fun ProfileCompletionScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "Telefono",
+                            text = "Teléfono",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = colorScheme.onSurface
@@ -355,7 +355,7 @@ fun ProfileCompletionScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Que te interesa hacer?",
+                            text = "¿Qué te interesa hacer?",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = colorScheme.onSurface
@@ -428,7 +428,7 @@ fun ProfileCompletionScreen(
                         val termsText = buildAnnotatedString {
                             append("Acepto la ")
                             withStyle(style = SpanStyle(color = PrimaryTeal, fontWeight = FontWeight.Bold)) {
-                                append("Politica de Privacidad")
+                                append("Política de Privacidad")
                             }
                             append(".")
                         }
@@ -475,7 +475,7 @@ fun ProfileCompletionScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "(c) 2026 Inmobi. Todos los derechos reservados.",
+                text = "© 2026 Inmobi. Todos los derechos reservados.",
                 fontSize = 11.sp,
                 color = colorScheme.onSurfaceVariant
             )

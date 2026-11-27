@@ -94,7 +94,7 @@ fun ManagePropertyScreen(
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
             title = { Text("Cancelar propiedad") },
-            text = { Text("Deseas cancelar esta propiedad? Dejara de ser visible para los demas usuarios.") },
+            text = { Text("¿Deseas cancelar esta propiedad? Dejará de ser visible para los demás usuarios.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -102,7 +102,7 @@ fun ManagePropertyScreen(
                         showCancelDialog = false
                     }
                 ) {
-                    Text("Si, cancelar", color = Color.Red)
+                    Text("Sí, cancelar", color = Color.Red)
                 }
             },
             dismissButton = {
@@ -117,7 +117,7 @@ fun ManagePropertyScreen(
         AlertDialog(
             onDismissRequest = { showCloseDialog = false },
             title = { Text(if (isSale) "Marcar como vendida" else "Marcar como rentada") },
-            text = { Text(if (isSale) "Deseas marcar esta propiedad como vendida? Ya no estara disponible." else "Deseas marcar esta propiedad como rentada? Ya no estara disponible.") },
+            text = { Text(if (isSale) "¿Deseas marcar esta propiedad como vendida? Ya no estará disponible." else "¿Deseas marcar esta propiedad como rentada? Ya no estará disponible.") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -125,7 +125,7 @@ fun ManagePropertyScreen(
                         showCloseDialog = false
                     }
                 ) {
-                    Text("Si, confirmar", color = PrimaryTeal)
+                    Text("Sí, confirmar", color = PrimaryTeal)
                 }
             },
             dismissButton = {
@@ -291,7 +291,7 @@ fun ManagePropertyScreen(
                         }
 
                         if (property.description != null && property.description.isNotBlank()) {
-                            Text("Descripcion", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
+                            Text("Descripción", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
                             Spacer(Modifier.height(8.dp))
                             Text(
                                 property.description,
@@ -364,8 +364,8 @@ private data class Spec(val icon: ImageVector, val label: String)
 
 private fun formatBaths(baths: Double): String {
     return if (baths == baths.toLong().toDouble()) {
-        "${baths.toLong()} banos"
+        "${baths.toLong()} baños"
     } else {
-        "%.1f banos".format(baths)
+        "%.1f baños".format(baths)
     }
 }

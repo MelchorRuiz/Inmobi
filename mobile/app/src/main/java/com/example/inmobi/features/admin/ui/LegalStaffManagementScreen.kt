@@ -175,7 +175,7 @@ fun LegalStaffManagementScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Toca el boton + para agregar uno",
+                                text = "Toca el botón + para agregar uno",
                                 fontSize = 13.sp,
                                 color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                             )
@@ -279,7 +279,7 @@ fun LegalStaffManagementScreen(
         AlertDialog(
             onDismissRequest = { confirmDeleteId = null },
             title = { Text("Eliminar registro") },
-            text = { Text("¿Estas seguro de que deseas eliminar este miembro del personal legal? Esta accion no se puede deshacer.") },
+            text = { Text("¿Estás seguro de que deseas eliminar este miembro del personal legal? Esta acción no se puede deshacer.") },
             confirmButton = {
                 Button(
                     onClick = { viewModel.deleteStaff(userId) },
@@ -404,7 +404,7 @@ private fun LegalStaffFormDialog(
     var isPasswordVisible by remember { mutableStateOf(false) }
     val isEditing = initialEmail.isNotEmpty()
 
-    val phoneError = if (phone.isNotEmpty() && !isValidPhone(phone)) "Debe tener 10 digitos" else null
+    val phoneError = if (phone.isNotEmpty() && !isValidPhone(phone)) "Debe tener 10 dígitos" else null
 
     val canSubmit = email.isNotBlank() &&
         fullName.isNotBlank() &&
@@ -445,14 +445,14 @@ private fun LegalStaffFormDialog(
                     enabled = !isSaving
                 )
                 FormField(
-                    label = "Correo electronico",
+                    label = "Correo electrónico",
                     value = email,
                     onValueChange = { email = it },
                     keyboardType = KeyboardType.Email,
                     enabled = !isSaving
                 )
                 FormField(
-                    label = if (isEditing) "Nueva contraseña (dejar vacio para no cambiar)" else "Contraseña (min. 8 caracteres)",
+                    label = if (isEditing) "Nueva contraseña (dejar vacío para no cambiar)" else "Contraseña (min. 8 caracteres)",
                     value = password,
                     onValueChange = { password = it },
                     keyboardType = KeyboardType.Password,
@@ -462,7 +462,7 @@ private fun LegalStaffFormDialog(
                     enabled = !isSaving
                 )
                 FormField(
-                    label = "Numero de cedula",
+                    label = "Número de cédula",
                     value = idNumber,
                     onValueChange = { idNumber = it },
                     enabled = !isSaving
@@ -480,7 +480,7 @@ private fun LegalStaffFormDialog(
                     enabled = !isSaving
                 )
                 FormField(
-                    label = "Telefono (opcional, 10 digitos)",
+                    label = "Teléfono (opcional, 10 dígitos)",
                     value = phone,
                     onValueChange = { phone = it.filter { c -> c.isDigit() }.take(10) },
                     keyboardType = KeyboardType.Phone,

@@ -108,7 +108,7 @@ fun RentPropertyScreen(
             }
 
             Spacer(Modifier.height(12.dp))
-            Text("Rentas con tope etico y sin abusos", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = colorScheme.onSurface)
+            Text("Rentas con tope ético y sin abusos", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold, color = colorScheme.onSurface)
             Spacer(Modifier.height(4.dp))
             Text("Explora opciones de renta equilibradas y ajustadas a la capacidad de pago real, respaldadas por Inmobi.", fontSize = 12.sp, color = colorScheme.onSurfaceVariant, lineHeight = 16.sp)
             Spacer(Modifier.height(16.dp))

@@ -89,7 +89,7 @@ fun AdminDashboardScreen() {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Desde aqui puedes gestionar el personal legal que brinda apoyo juridico a los usuarios de la plataforma.",
+                    text = "Desde aquí puedes gestionar el personal legal que brinda apoyo jurídico a los usuarios de la plataforma.",
                     fontSize = 13.sp,
                     color = colorScheme.onSurfaceVariant,
                     lineHeight = 18.sp
